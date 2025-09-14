@@ -1,0 +1,356 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Shop Dashboard - {{ shop.name }} - Barber Management System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-store me-2"></i>{{ shop.name }}</h2>
+            <div>
+                <a href="{% url 'profile' %}" class="btn btn-outline-dark me-2">
+                    <i class="fas fa-user-edit me-1"></i>Edit Profile
+                </a>
+                <span class="badge {% if shop.is_active %}bg-success{% else %}bg-danger{% endif %} fs-6">
+                    {% if shop.is_active %}Active{% else %}Inactive{% endif %}
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Stats -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-center bg-primary text-white">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-users me-2"></i>
+                    Current Waiting
+                </h5>
+                <p class="card-text display-4 fw-bold" id="currentWaitingCount">{{ shop.current_waiting_count }}</p>
+                <small>of {{ shop.max_waiting_list_size }} max</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center bg-success text-white">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-calendar-check me-2"></i>
+                    Today's Appointments
+                </h5>
+                <p class="card-text display-4 fw-bold">{{ recent_appointments.count }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center bg-info text-white">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-clock me-2"></i>
+                    Hours Today
+                </h5>
+                <p class="card-text">
+                    <strong>{{ shop.opening_time|time:"g:i A" }}</strong><br>
+                    <small>to</small><br>
+                    <strong>{{ shop.closing_time|time:"g:i A" }}</strong>
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center bg-warning text-white">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-phone me-2"></i>
+                    Contact
+                </h5>
+                <p class="card-text">
+                    <strong>{{ shop.phone_number }}</strong>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Waiting List Management -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-list me-2"></i>Waiting List Management</h5>
+                <div>
+                    <button class="btn btn-success me-2" onclick="increaseWaiting()">
+                        <i class="fas fa-plus me-1"></i>Add Customer
+                    </button>
+                    <button class="btn btn-danger" onclick="decreaseWaiting()">
+                        <i class="fas fa-minus me-1"></i>Serve Customer
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if waiting_list %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Customer</th>
+                                <th>Joined At</th>
+                                <th>Estimated Wait</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="waitingListTable">
+                            {% for entry in waiting_list %}
+                            <tr>
+                                <td><span class="badge bg-info">#{{ entry.position_number }}</span></td>
+                                <td>
+                                    <strong>{{ entry.customer.first_name|default:entry.customer.username }}</strong>
+                                    {% if entry.customer.phone_number %}
+                                    <br><small class="text-muted">{{ entry.customer.phone_number }}</small>
+                                    {% endif %}
+                                </td>
+                                <td>{{ entry.joined_at|date:"g:i A" }}</td>
+                                <td>
+                                    {% if entry.estimated_wait_time %}
+                                        {{ entry.estimated_wait_time }}
+                                    {% else %}
+                                        <span class="text-muted">~{{ entry.position_number|add:"-1"|mul:"15" }} min</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge 
+                                        {% if entry.status == 'waiting' %}bg-warning{% endif %}
+                                        {% if entry.status == 'called' %}bg-primary{% endif %}
+                                        {% if entry.status == 'served' %}bg-success{% endif %}
+                                    ">
+                                        {{ entry.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if entry.status == 'waiting' %}
+                                        <button class="btn btn-sm btn-primary me-1" onclick="callCustomer({{ entry.id }})">
+                                            <i class="fas fa-phone"></i> Call
+                                        </button>
+                                        <button class="btn btn-sm btn-success" onclick="serveCustomer({{ entry.id }})">
+                                            <i class="fas fa-check"></i> Serve
+                                        </button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                    <h5>No customers waiting</h5>
+                    <p class="text-muted">Use the "Add Customer" button above when someone joins your waiting list.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Appointments -->
+{% if recent_appointments %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Recent Appointments</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Customer</th>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Status</th>
+                                <th>Notes</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for appointment in recent_appointments %}
+                            <tr>
+                                <td>
+                                    <strong>{{ appointment.customer.first_name|default:appointment.customer.username }}</strong>
+                                    {% if appointment.customer.phone_number %}
+                                    <br><small class="text-muted">{{ appointment.customer.phone_number }}</small>
+                                    {% endif %}
+                                </td>
+                                <td>{{ appointment.appointment_date|date:"M d, Y" }}</td>
+                                <td>{{ appointment.appointment_time|time:"g:i A" }}</td>
+                                <td>
+                                    <span class="badge 
+                                        {% if appointment.status == 'scheduled' %}bg-primary{% endif %}
+                                        {% if appointment.status == 'in_progress' %}bg-warning{% endif %}
+                                        {% if appointment.status == 'completed' %}bg-success{% endif %}
+                                        {% if appointment.status == 'cancelled' %}bg-danger{% endif %}
+                                    ">
+                                        {{ appointment.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {{ appointment.service_description|truncatechars:50|default:"-" }}
+                                </td>
+                                <td>
+                                    {% if appointment.status == 'scheduled' %}
+                                        <button class="btn btn-sm btn-warning me-1" onclick="startAppointment({{ appointment.id }})">
+                                            <i class="fas fa-play"></i> Start
+                                        </button>
+                                        <button class="btn btn-sm btn-success" onclick="completeAppointment({{ appointment.id }})">
+                                            <i class="fas fa-check"></i> Complete
+                                        </button>
+                                    {% elif appointment.status == 'in_progress' %}
+                                        <button class="btn btn-sm btn-success" onclick="completeAppointment({{ appointment.id }})">
+                                            <i class="fas fa-check"></i> Complete
+                                        </button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Shop Info -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Shop Information</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Address:</strong><br>{{ shop.address }}</p>
+                <p><strong>Description:</strong><br>{{ shop.description|default:"No description provided" }}</p>
+                <p><strong>Operating Hours:</strong><br>
+                   {{ shop.opening_time|time:"g:i A" }} - {{ shop.closing_time|time:"g:i A" }}</p>
+                <p><strong>Max Waiting List:</strong> {{ shop.max_waiting_list_size }} customers</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Quick Statistics</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6">
+                        <h4 class="text-primary">{{ shop.appointments.count }}</h4>
+                        <small>Total Appointments</small>
+                    </div>
+                    <div class="col-6">
+                        <h4 class="text-success">{{ shop.waiting_list.count }}</h4>
+                        <small>Total Waiting Entries</small>
+                    </div>
+                </div>
+                <hr>
+                <div class="progress mb-2">
+                    <div class="progress-bar" role="progressbar" 
+                         style="width: {% widthratio shop.current_waiting_count shop.max_waiting_list_size 100 %}%">
+                    </div>
+                </div>
+                <small class="text-muted">
+                    Waiting list: {{ shop.current_waiting_count }}/{{ shop.max_waiting_list_size }} 
+                    ({% widthratio shop.current_waiting_count shop.max_waiting_list_size 100 %}% full)
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+// CSRF token for AJAX requests
+const csrfToken = '{{ csrf_token }}';
+
+function increaseWaiting() {
+    fetch("{% url 'increase_waiting_count' %}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken,
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('currentWaitingCount').textContent = data.current_count;
+            location.reload(); // Reload to update the waiting list table
+        } else {
+            alert(data.error || 'Failed to add customer to waiting list');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred');
+    });
+}
+
+function decreaseWaiting() {
+    if (confirm('Mark next customer as served?')) {
+        fetch("{% url 'decrease_waiting_count' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken,
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('currentWaitingCount').textContent = data.current_count;
+                location.reload(); // Reload to update the waiting list table
+            } else {
+                alert(data.error || 'Failed to serve customer');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred');
+        });
+    }
+}
+
+function callCustomer(entryId) {
+    // TODO: Implement call customer functionality
+    console.log('Call customer:', entryId);
+    alert('Call customer feature - to be implemented');
+}
+
+function serveCustomer(entryId) {
+    // TODO: Implement serve customer functionality
+    console.log('Serve customer:', entryId);
+    alert('Serve customer feature - to be implemented');
+}
+
+function startAppointment(appointmentId) {
+    // TODO: Implement start appointment functionality
+    console.log('Start appointment:', appointmentId);
+    alert('Start appointment feature - to be implemented');
+}
+
+function completeAppointment(appointmentId) {
+    // TODO: Implement complete appointment functionality
+    console.log('Complete appointment:', appointmentId);
+    alert('Complete appointment feature - to be implemented');
+}
+</script>
+{% endblock %}
+
+{% endblock %}

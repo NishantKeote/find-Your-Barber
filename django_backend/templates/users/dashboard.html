@@ -1,0 +1,209 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Customer Dashboard - Barber Management System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-tachometer-alt me-2"></i>Welcome, {{ user.first_name|default:user.username }}!</h2>
+            <a href="{% url 'profile' %}" class="btn btn-outline-dark">
+                <i class="fas fa-user-edit me-1"></i>Edit Profile
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-calendar-check text-primary me-2"></i>
+                    My Appointments
+                </h5>
+                <p class="card-text display-4 fw-bold text-primary">{{ appointments.count }}</p>
+                <a href="{% url 'my_appointments' %}" class="btn btn-primary">View All</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-clock text-warning me-2"></i>
+                    Active Waiting Lists
+                </h5>
+                <p class="card-text display-4 fw-bold text-warning">{{ waiting_entries.count }}</p>
+                <a href="{% url 'my_waiting_lists' %}" class="btn btn-warning">View All</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-store text-success me-2"></i>
+                    Find Barbers
+                </h5>
+                <p class="card-text">Discover nearby barber shops</p>
+                <a href="{% url 'shop_list' %}" class="btn btn-success">Browse Shops</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if appointments %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Recent Appointments</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Shop</th>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for appointment in appointments %}
+                            <tr>
+                                <td>{{ appointment.shop.name }}</td>
+                                <td>{{ appointment.appointment_date|date:"M d, Y" }}</td>
+                                <td>{{ appointment.appointment_time|time:"g:i A" }}</td>
+                                <td>
+                                    <span class="badge 
+                                        {% if appointment.status == 'scheduled' %}bg-primary{% endif %}
+                                        {% if appointment.status == 'in_progress' %}bg-warning{% endif %}
+                                        {% if appointment.status == 'completed' %}bg-success{% endif %}
+                                        {% if appointment.status == 'cancelled' %}bg-danger{% endif %}
+                                    ">
+                                        {{ appointment.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if appointment.status == 'scheduled' %}
+                                        <button class="btn btn-sm btn-danger" onclick="cancelAppointment({{ appointment.id }})">
+                                            <i class="fas fa-times"></i> Cancel
+                                        </button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if waiting_entries %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Current Waiting Lists</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Shop</th>
+                                <th>Position</th>
+                                <th>Joined At</th>
+                                <th>Est. Wait Time</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for entry in waiting_entries %}
+                            <tr>
+                                <td>{{ entry.shop.name }}</td>
+                                <td>
+                                    <span class="badge bg-info">#{{ entry.position_number }}</span>
+                                </td>
+                                <td>{{ entry.joined_at|date:"M d, g:i A" }}</td>
+                                <td>
+                                    {% if entry.estimated_wait_time %}
+                                        {{ entry.estimated_wait_time }}
+                                    {% else %}
+                                        <span class="text-muted">Unknown</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge 
+                                        {% if entry.status == 'waiting' %}bg-warning{% endif %}
+                                        {% if entry.status == 'called' %}bg-primary{% endif %}
+                                        {% if entry.status == 'served' %}bg-success{% endif %}
+                                        {% if entry.status == 'left' %}bg-secondary{% endif %}
+                                    ">
+                                        {{ entry.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if entry.status == 'waiting' %}
+                                        <button class="btn btn-sm btn-danger" onclick="leaveWaitingList({{ entry.id }})">
+                                            <i class="fas fa-sign-out-alt"></i> Leave
+                                        </button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if not appointments and not waiting_entries %}
+<div class="row">
+    <div class="col-12">
+        <div class="card text-center">
+            <div class="card-body py-5">
+                <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                <h4>No appointments or waiting lists yet</h4>
+                <p class="text-muted">Start by finding barber shops near you and booking your first appointment!</p>
+                <a href="{% url 'shop_list' %}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-store me-2"></i>Find Barbers
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% block extra_js %}
+<script>
+function cancelAppointment(appointmentId) {
+    if (confirm('Are you sure you want to cancel this appointment?')) {
+        // Add AJAX call to cancel appointment
+        // This would need to be implemented in the appointments app
+        console.log('Cancel appointment:', appointmentId);
+    }
+}
+
+function leaveWaitingList(entryId) {
+    if (confirm('Are you sure you want to leave this waiting list?')) {
+        // Add AJAX call to leave waiting list
+        // This would need to be implemented in the waiting_lists app
+        console.log('Leave waiting list:', entryId);
+    }
+}
+</script>
+{% endblock %}
+
+{% endblock %}

@@ -1,0 +1,221 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Profile - {{ user.username }} - Barber Management System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-lg">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="fas fa-user-edit me-2"></i>
+                    My Profile
+                </h4>
+            </div>
+            <div class="card-body p-4">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="first_name" class="form-label">First Name</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-user"></i>
+                                </span>
+                                <input type="text" class="form-control" id="first_name" name="first_name" 
+                                       value="{{ user.first_name|default:'' }}">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="last_name" class="form-label">Last Name</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-user"></i>
+                                </span>
+                                <input type="text" class="form-control" id="last_name" name="last_name" 
+                                       value="{{ user.last_name|default:'' }}">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-at"></i>
+                            </span>
+                            <input type="text" class="form-control" id="username" 
+                                   value="{{ user.username }}" disabled>
+                            <small class="form-text text-muted">Username cannot be changed</small>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email Address</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-envelope"></i>
+                            </span>
+                            <input type="email" class="form-control" id="email" name="email" 
+                                   value="{{ user.email|default:'' }}">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="phone_number" class="form-label">Phone Number</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-phone"></i>
+                            </span>
+                            <input type="tel" class="form-control" id="phone_number" name="phone_number" 
+                                   value="{{ user.phone_number|default:'' }}">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="address" class="form-label">Address</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-map-marker-alt"></i>
+                            </span>
+                            <input type="text" class="form-control" id="address" name="address" 
+                                   value="{{ user.address|default:'' }}">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="role" class="form-label">Account Type</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-user-tag"></i>
+                            </span>
+                            <input type="text" class="form-control" id="role" 
+                                   value="{{ user.get_role_display }}" disabled>
+                            <small class="form-text text-muted">Account type cannot be changed</small>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">Member Since</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-calendar"></i>
+                                </span>
+                                <input type="text" class="form-control" 
+                                       value="{{ user.date_joined|date:'M d, Y' }}" disabled>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Last Updated</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-clock"></i>
+                                </span>
+                                <input type="text" class="form-control" 
+                                       value="{{ user.updated_at|date:'M d, Y g:i A' }}" disabled>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% if user.role == 'shop_owner' %}{% url 'shop_dashboard' %}{% else %}{% url 'dashboard' %}{% endif %}" 
+                           class="btn btn-outline-secondary me-md-2">
+                            <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Account Statistics -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Account Statistics</h5>
+            </div>
+            <div class="card-body">
+                {% if user.role == 'customer' %}
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <div class="stat-item">
+                            <h4 class="text-primary">{{ user.appointments.count }}</h4>
+                            <p class="text-muted">Total Appointments</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-item">
+                            <h4 class="text-success">{{ user.appointments.filter:status='completed'.count }}</h4>
+                            <p class="text-muted">Completed</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-item">
+                            <h4 class="text-warning">{{ user.waiting_entries.count }}</h4>
+                            <p class="text-muted">Waiting List Entries</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-item">
+                            <h4 class="text-info">{{ user.waiting_entries.filter:status='waiting'.count }}</h4>
+                            <p class="text-muted">Currently Waiting</p>
+                        </div>
+                    </div>
+                </div>
+                {% elif user.role == 'shop_owner' %}
+                <div class="row text-center">
+                    <div class="col-md-4">
+                        <div class="stat-item">
+                            <h4 class="text-primary">
+                                {% if user.shop %}1{% else %}0{% endif %}
+                            </h4>
+                            <p class="text-muted">Shop Registered</p>
+                        </div>
+                    </div>
+                    {% if user.shop %}
+                    <div class="col-md-4">
+                        <div class="stat-item">
+                            <h4 class="text-success">{{ user.shop.appointments.count }}</h4>
+                            <p class="text-muted">Total Appointments</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stat-item">
+                            <h4 class="text-warning">{{ user.shop.current_waiting_count }}</h4>
+                            <p class="text-muted">Current Waiting</p>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="col-md-8">
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            You haven't set up your shop yet. 
+                            <a href="{% url 'shop_setup' %}" class="alert-link">Set up your shop now</a>.
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.stat-item {
+    padding: 20px;
+}
+.stat-item h4 {
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+</style>
+
+{% endblock %}

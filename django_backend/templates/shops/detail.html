@@ -1,0 +1,185 @@
+{% extends 'base/base.html' %}
+
+{% block title %}{{ shop.name }} - Barber Management System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            {% if shop.image %}
+            <img src="{{ shop.image.url }}" class="card-img-top" alt="{{ shop.name }}" style="height: 300px; object-fit: cover;">
+            {% else %}
+            <div class="card-img-top d-flex align-items-center justify-content-center" style="height: 300px; background-color: #f8f9fa;">
+                <i class="fas fa-store fa-5x text-muted"></i>
+            </div>
+            {% endif %}
+            
+            <div class="card-body">
+                <h2>{{ shop.name }}</h2>
+                
+                <div class="mb-3">
+                    <span class="badge {% if shop.current_waiting_count < shop.max_waiting_list_size %}bg-success{% else %}bg-danger{% endif %} fs-6">
+                        {% if shop.current_waiting_count < shop.max_waiting_list_size %}
+                            <i class="fas fa-check-circle me-1"></i>Available
+                        {% else %}
+                            <i class="fas fa-times-circle me-1"></i>Full
+                        {% endif %}
+                    </span>
+                    <span class="ms-3 fs-5">
+                        <strong>{{ shop.current_waiting_count }}</strong> of {{ shop.max_waiting_list_size }} waiting
+                    </span>
+                </div>
+                
+                <p class="card-text">{{ shop.description|default:"No description provided for this shop." }}</p>
+                
+                <div class="shop-details mt-4">
+                    <h5><i class="fas fa-info-circle me-2"></i>Shop Information</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong><i class="fas fa-map-marker-alt me-2"></i>Address:</strong><br>
+                               {{ shop.address }}</p>
+                            <p><strong><i class="fas fa-phone me-2"></i>Phone:</strong><br>
+                               {{ shop.phone_number }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong><i class="fas fa-clock me-2"></i>Hours:</strong><br>
+                               {{ shop.opening_time|time:"g:i A" }} - {{ shop.closing_time|time:"g:i A" }}</p>
+                            <p><strong><i class="fas fa-users me-2"></i>Max Waiting List:</strong><br>
+                               {{ shop.max_waiting_list_size }} customers</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <!-- Actions Card -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-calendar-plus me-2"></i>Book Services</h5>
+            </div>
+            <div class="card-body">
+                {% if user.is_authenticated and user.role == 'customer' %}
+                    {% if user_in_waiting %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-clock me-2"></i>
+                            <strong>You're already in the waiting list!</strong><br>
+                            Position: <span class="badge bg-info">#{{ user_in_waiting.position_number }}</span><br>
+                            Joined: {{ user_in_waiting.joined_at|date:"g:i A" }}
+                        </div>
+                        <a href="{% url 'leave_waiting_list' user_in_waiting.id %}" class="btn btn-outline-danger w-100 mb-2">
+                            <i class="fas fa-sign-out-alt me-1"></i>Leave Waiting List
+                        </a>
+                    {% else %}
+                        {% if shop.current_waiting_count < shop.max_waiting_list_size %}
+                            <a href="{% url 'join_waiting_list' shop.id %}" class="btn btn-primary w-100 mb-3">
+                                <i class="fas fa-plus me-1"></i>Join Waiting List
+                            </a>
+                        {% else %}
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                Waiting list is currently full.
+                            </div>
+                        {% endif %}
+                    {% endif %}
+                    
+                    <a href="{% url 'book_appointment' shop.id %}" class="btn btn-success w-100">
+                        <i class="fas fa-calendar-check me-1"></i>Schedule Appointment
+                    </a>
+                {% else %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-sign-in-alt me-2"></i>
+                        Please <a href="{% url 'login' %}">login</a> to join the waiting list or book appointments.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Current Waiting List -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-list me-2"></i>Current Waiting List
+                    <span class="badge bg-secondary ms-2">{{ waiting_count }}</span>
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if waiting_count > 0 %}
+                    <div class="progress mb-3">
+                        <div class="progress-bar" role="progressbar" 
+                             style="width: {% widthratio waiting_count shop.max_waiting_list_size 100 %}%">
+                        </div>
+                    </div>
+                    <p class="text-muted mb-0">
+                        <small>{{ waiting_count }} of {{ shop.max_waiting_list_size }} spots filled</small>
+                    </p>
+                    {% if waiting_count < shop.max_waiting_list_size %}
+                        <p class="text-success mb-0">
+                            <small><i class="fas fa-check-circle me-1"></i>{{ shop.max_waiting_list_size|sub:waiting_count }} spot{{ shop.max_waiting_list_size|sub:waiting_count|pluralize }} available</small>
+                        </p>
+                    {% else %}
+                        <p class="text-danger mb-0">
+                            <small><i class="fas fa-times-circle me-1"></i>No spots available</small>
+                        </p>
+                    {% endif %}
+                {% else %}
+                    <div class="text-center py-3">
+                        <i class="fas fa-users-slash fa-2x text-muted mb-2"></i>
+                        <p class="text-muted mb-0">No one is waiting</p>
+                        <small class="text-success">Perfect time to visit!</small>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Additional Info -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-question-circle me-2"></i>How It Works</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <i class="fas fa-plus-circle fa-3x text-primary mb-3"></i>
+                            <h6>1. Join Waiting List</h6>
+                            <p class="text-muted">Add yourself to the shop's waiting list and get your position number.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <i class="fas fa-clock fa-3x text-warning mb-3"></i>
+                            <h6>2. Wait Your Turn</h6>
+                            <p class="text-muted">Monitor your position and estimated wait time in real-time.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <i class="fas fa-cut fa-3x text-success mb-3"></i>
+                            <h6>3. Get Your Service</h6>
+                            <p class="text-muted">Arrive when it's your turn and enjoy your barber service!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+// Auto-refresh waiting count every 30 seconds
+setInterval(function() {
+    // In a real implementation, you would make an AJAX call to update the waiting count
+    // This is a placeholder for real-time updates
+    console.log('Refreshing waiting list status...');
+}, 30000);
+</script>
+{% endblock %}
+
+{% endblock %}

@@ -1,0 +1,214 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Shop Setup - Barber Management System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-lg">
+            <div class="card-header text-center">
+                <h4 class="mb-0">
+                    <i class="fas fa-store me-2"></i>
+                    Set Up Your Barber Shop
+                </h4>
+                <p class="mb-0 mt-2 text-light">Complete your shop registration to start managing customers</p>
+            </div>
+            <div class="card-body p-4">
+                <form method="post" id="shopSetupForm">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Shop Name *</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-store"></i>
+                            </span>
+                            <input type="text" class="form-control" id="name" name="name" required 
+                                   placeholder="e.g. Mike's Barber Shop">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-align-left"></i>
+                            </span>
+                            <textarea class="form-control" id="description" name="description" rows="3"
+                                      placeholder="Brief description of your services and specialties (optional)"></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="address" class="form-label">Shop Address *</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-map-marker-alt"></i>
+                            </span>
+                            <input type="text" class="form-control" id="address" name="address" required 
+                                   placeholder="Full street address of your shop">
+                        </div>
+                        <div class="form-text">
+                            <small class="text-muted">This helps customers find your shop. Be as specific as possible.</small>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="latitude" class="form-label">Latitude</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-crosshairs"></i>
+                                    </span>
+                                    <input type="number" class="form-control" id="latitude" name="latitude" 
+                                           step="any" placeholder="0.000000">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="longitude" class="form-label">Longitude</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-crosshairs"></i>
+                                    </span>
+                                    <input type="number" class="form-control" id="longitude" name="longitude" 
+                                           step="any" placeholder="0.000000">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="getLocation()">
+                            <i class="fas fa-location-arrow me-1"></i>Get My Current Location
+                        </button>
+                        <small class="form-text text-muted d-block">
+                            You can use coordinates or click the button above to auto-detect your location.
+                        </small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="phone_number" class="form-label">Phone Number *</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-phone"></i>
+                            </span>
+                            <input type="tel" class="form-control" id="phone_number" name="phone_number" required 
+                                   placeholder="(123) 456-7890">
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="opening_time" class="form-label">Opening Time *</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-clock"></i>
+                                    </span>
+                                    <input type="time" class="form-control" id="opening_time" name="opening_time" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="closing_time" class="form-label">Closing Time *</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-clock"></i>
+                                    </span>
+                                    <input type="time" class="form-control" id="closing_time" name="closing_time" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="max_waiting_list_size" class="form-label">Maximum Waiting List Size</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-users"></i>
+                            </span>
+                            <input type="number" class="form-control" id="max_waiting_list_size" 
+                                   name="max_waiting_list_size" min="1" max="100" value="20">
+                        </div>
+                        <div class="form-text">
+                            <small class="text-muted">Maximum number of customers that can wait at your shop (default: 20)</small>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-store me-2"></i>
+                            Register My Shop
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+function getLocation() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+            document.getElementById('latitude').value = position.coords.latitude;
+            document.getElementById('longitude').value = position.coords.longitude;
+            
+            // Optional: Show success message
+            const alert = document.createElement('div');
+            alert.className = 'alert alert-success alert-dismissible fade show mt-2';
+            alert.innerHTML = `
+                <i class="fas fa-check-circle me-1"></i>
+                Location detected successfully!
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.querySelector('.mb-3').appendChild(alert);
+            
+            // Auto dismiss after 3 seconds
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    alert.remove();
+                }
+            }, 3000);
+        }, function(error) {
+            let errorMsg = 'Unable to get location. ';
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    errorMsg += 'Location access denied by user.';
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    errorMsg += 'Location information unavailable.';
+                    break;
+                case error.TIMEOUT:
+                    errorMsg += 'Location request timed out.';
+                    break;
+                default:
+                    errorMsg += 'An unknown error occurred.';
+                    break;
+            }
+            alert(errorMsg);
+        });
+    } else {
+        alert('Geolocation is not supported by this browser.');
+    }
+}
+
+// Form validation
+document.getElementById('shopSetupForm').addEventListener('submit', function(e) {
+    const openingTime = document.getElementById('opening_time').value;
+    const closingTime = document.getElementById('closing_time').value;
+    
+    if (openingTime && closingTime && openingTime >= closingTime) {
+        e.preventDefault();
+        alert('Closing time must be after opening time!');
+        return false;
+    }
+});
+</script>
+{% endblock %}
+
+{% endblock %}
