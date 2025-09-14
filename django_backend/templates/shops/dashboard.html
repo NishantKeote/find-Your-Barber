@@ -118,7 +118,7 @@
                                     {% if entry.estimated_wait_time %}
                                         {{ entry.estimated_wait_time }}
                                     {% else %}
-                                        <span class="text-muted">~{{ entry.position_number|add:"-1"|mul:"15" }} min</span>
+                                        <span class="text-muted">~15 min</span>
                                     {% endif %}
                                 </td>
                                 <td>
@@ -204,14 +204,14 @@
                                 </td>
                                 <td>
                                     {% if appointment.status == 'scheduled' %}
-                                        <button class="btn btn-sm btn-warning me-1" onclick="startAppointment({{ appointment.id }})">
+                                        <button class="btn btn-sm btn-warning me-1" onclick="startService({{ appointment.id }})">
                                             <i class="fas fa-play"></i> Start
                                         </button>
-                                        <button class="btn btn-sm btn-success" onclick="completeAppointment({{ appointment.id }})">
+                                        <button class="btn btn-sm btn-success" onclick="completeService({{ appointment.id }})">
                                             <i class="fas fa-check"></i> Complete
                                         </button>
                                     {% elif appointment.status == 'in_progress' %}
-                                        <button class="btn btn-sm btn-success" onclick="completeAppointment({{ appointment.id }})">
+                                        <button class="btn btn-sm btn-success" onclick="completeService({{ appointment.id }})">
                                             <i class="fas fa-check"></i> Complete
                                         </button>
                                     {% endif %}
@@ -339,16 +339,52 @@ function serveCustomer(entryId) {
     alert('Serve customer feature - to be implemented');
 }
 
-function startAppointment(appointmentId) {
-    // TODO: Implement start appointment functionality
-    console.log('Start appointment:', appointmentId);
-    alert('Start appointment feature - to be implemented');
+function startService(appointmentId) {
+    if (confirm('Mark this appointment as in progress?')) {
+        fetch(`/appointments/start/${appointmentId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken,
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload(); // Reload to update the dashboard
+            } else {
+                alert(data.error || 'Failed to start appointment');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred');
+        });
+    }
 }
 
-function completeAppointment(appointmentId) {
-    // TODO: Implement complete appointment functionality
-    console.log('Complete appointment:', appointmentId);
-    alert('Complete appointment feature - to be implemented');
+function completeService(appointmentId) {
+    if (confirm('Mark this appointment as completed?')) {
+        fetch(`/appointments/complete/${appointmentId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken,
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload(); // Reload to update the dashboard
+            } else {
+                alert(data.error || 'Failed to complete appointment');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred');
+        });
+    }
 }
 </script>
 {% endblock %}

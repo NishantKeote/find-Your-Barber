@@ -116,7 +116,7 @@
                     </p>
                     {% if waiting_count < shop.max_waiting_list_size %}
                         <p class="text-success mb-0">
-                            <small><i class="fas fa-check-circle me-1"></i>{{ shop.max_waiting_list_size|sub:waiting_count }} spot{{ shop.max_waiting_list_size|sub:waiting_count|pluralize }} available</small>
+                            <small><i class="fas fa-check-circle me-1"></i>Spots available</small>
                         </p>
                     {% else %}
                         <p class="text-danger mb-0">

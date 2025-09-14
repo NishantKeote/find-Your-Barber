@@ -1,0 +1,126 @@
+{% extends 'base/base.html' %}
+
+{% block title %}My Appointments - Barber Management System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-calendar-check me-2"></i>My Appointments</h2>
+            <a href="{% url 'shop_list' %}" class="btn btn-primary">
+                <i class="fas fa-plus me-1"></i>Book New Appointment
+            </a>
+        </div>
+    </div>
+</div>
+
+{% if appointments %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Shop</th>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Service</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for appointment in appointments %}
+                            <tr>
+                                <td>
+                                    <strong>{{ appointment.shop.name }}</strong><br>
+                                    <small class="text-muted">{{ appointment.shop.address|truncatechars:40 }}</small>
+                                </td>
+                                <td>{{ appointment.appointment_date|date:"M d, Y" }}</td>
+                                <td>{{ appointment.appointment_time|time:"g:i A" }}</td>
+                                <td>{{ appointment.service_description|default:"-" }}</td>
+                                <td>
+                                    <span class="badge 
+                                        {% if appointment.status == 'scheduled' %}bg-primary{% endif %}
+                                        {% if appointment.status == 'in_progress' %}bg-warning{% endif %}
+                                        {% if appointment.status == 'completed' %}bg-success{% endif %}
+                                        {% if appointment.status == 'cancelled' %}bg-danger{% endif %}
+                                    ">
+                                        {{ appointment.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if appointment.status == 'scheduled' %}
+                                        <button class="btn btn-sm btn-outline-danger" onclick="cancelAppointment({{ appointment.id }})">
+                                            <i class="fas fa-times"></i> Cancel
+                                        </button>
+                                        <a href="{% url 'shop_detail' appointment.shop.id %}" class="btn btn-sm btn-outline-info">
+                                            <i class="fas fa-eye"></i> View Shop
+                                        </a>
+                                    {% elif appointment.status == 'completed' %}
+                                        <a href="{% url 'shop_detail' appointment.shop.id %}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-redo"></i> Book Again
+                                        </a>
+                                    {% else %}
+                                        <a href="{% url 'shop_detail' appointment.shop.id %}" class="btn btn-sm btn-outline-info">
+                                            <i class="fas fa-eye"></i> View Shop
+                                        </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="row">
+    <div class="col-12">
+        <div class="card text-center">
+            <div class="card-body py-5">
+                <i class="fas fa-calendar-times fa-4x text-muted mb-4"></i>
+                <h4>No appointments yet</h4>
+                <p class="text-muted mb-4">You haven't booked any appointments yet. Find a barber shop and schedule your first appointment!</p>
+                <a href="{% url 'shop_list' %}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-store me-2"></i>Find Barber Shops
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% block extra_js %}
+<script>
+function cancelAppointment(appointmentId) {
+    if (confirm('Are you sure you want to cancel this appointment?')) {
+        fetch(`/appointments/cancel/${appointmentId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert(data.error || 'Failed to cancel appointment');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred');
+        });
+    }
+}
+</script>
+{% endblock %}
+
+{% endblock %}

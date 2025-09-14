@@ -30,6 +30,7 @@ def book_appointment(request, shop_id):
             
             # Check if appointment is in the future
             appointment_datetime = datetime.combine(appointment_date, appointment_time)
+            appointment_datetime = timezone.make_aware(appointment_datetime)
             if appointment_datetime <= timezone.now():
                 messages.error(request, 'Appointment must be in the future')
                 return render(request, 'appointments/book.html', {'shop': shop})
@@ -108,4 +109,76 @@ def shop_appointments(request):
     return render(request, 'appointments/shop_appointments.html', {
         'appointments': appointments,
         'shop': shop
+    })
+
+@login_required
+@require_POST
+def start_appointment(request, appointment_id):
+    """Shop owner starts an appointment (mark as in progress)"""
+    if request.user.role != 'shop_owner':
+        return JsonResponse({'error': 'Access denied'}, status=403)
+    
+    # Get appointment for this shop owner
+    appointment = get_object_or_404(Appointment, 
+                                  id=appointment_id, 
+                                  shop__owner=request.user)
+    
+    if appointment.status != 'scheduled':
+        return JsonResponse({'error': 'Can only start scheduled appointments'}, status=400)
+    
+    appointment.status = 'in_progress'
+    appointment.save()
+    
+    return JsonResponse({
+        'success': True, 
+        'message': 'Appointment started successfully',
+        'new_status': 'in_progress'
+    })
+
+@login_required
+@require_POST
+def complete_appointment(request, appointment_id):
+    """Shop owner completes an appointment"""
+    if request.user.role != 'shop_owner':
+        return JsonResponse({'error': 'Access denied'}, status=403)
+    
+    # Get appointment for this shop owner
+    appointment = get_object_or_404(Appointment, 
+                                  id=appointment_id, 
+                                  shop__owner=request.user)
+    
+    if appointment.status not in ['scheduled', 'in_progress']:
+        return JsonResponse({'error': 'Can only complete scheduled or in-progress appointments'}, status=400)
+    
+    appointment.status = 'completed'
+    appointment.save()
+    
+    return JsonResponse({
+        'success': True, 
+        'message': 'Appointment completed successfully',
+        'new_status': 'completed'
+    })
+
+@login_required
+@require_POST
+def cancel_appointment_by_shop(request, appointment_id):
+    """Shop owner cancels an appointment"""
+    if request.user.role != 'shop_owner':
+        return JsonResponse({'error': 'Access denied'}, status=403)
+    
+    # Get appointment for this shop owner
+    appointment = get_object_or_404(Appointment, 
+                                  id=appointment_id, 
+                                  shop__owner=request.user)
+    
+    if appointment.status not in ['scheduled', 'in_progress']:
+        return JsonResponse({'error': 'Can only cancel scheduled or in-progress appointments'}, status=400)
+    
+    appointment.status = 'cancelled'
+    appointment.save()
+    
+    return JsonResponse({
+        'success': True, 
+        'message': 'Appointment cancelled successfully',
+        'new_status': 'cancelled'
     })

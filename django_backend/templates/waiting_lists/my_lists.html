@@ -1,0 +1,135 @@
+{% extends 'base/base.html' %}
+
+{% block title %}My Waiting Lists - Barber Management System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-clock me-2"></i>My Waiting Lists</h2>
+            <a href="{% url 'shop_list' %}" class="btn btn-primary">
+                <i class="fas fa-plus me-1"></i>Find Shops to Join
+            </a>
+        </div>
+    </div>
+</div>
+
+{% if waiting_entries %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Shop</th>
+                                <th>Position</th>
+                                <th>Joined At</th>
+                                <th>Est. Wait Time</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for entry in waiting_entries %}
+                            <tr>
+                                <td>
+                                    <strong>{{ entry.shop.name }}</strong><br>
+                                    <small class="text-muted">{{ entry.shop.address|truncatechars:40 }}</small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info fs-6">#{{ entry.position_number }}</span>
+                                </td>
+                                <td>{{ entry.joined_at|date:"M d, g:i A" }}</td>
+                                <td>
+                                    {% if entry.estimated_wait_time %}
+                                        {{ entry.estimated_wait_time }}
+                                    {% else %}
+                                        <span class="text-muted">~15 min</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-warning">
+                                        {{ entry.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-danger me-2" onclick="leaveWaitingList({{ entry.id }})">
+                                        <i class="fas fa-sign-out-alt"></i> Leave
+                                    </button>
+                                    <a href="{% url 'shop_detail' entry.shop.id %}" class="btn btn-sm btn-outline-info">
+                                        <i class="fas fa-eye"></i> View Shop
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Real-time Updates Info -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            <strong>Real-time Updates:</strong> Your waiting list position is updated automatically. You'll be notified when it's your turn!
+        </div>
+    </div>
+</div>
+
+{% else %}
+<div class="row">
+    <div class="col-12">
+        <div class="card text-center">
+            <div class="card-body py-5">
+                <i class="fas fa-clock fa-4x text-muted mb-4"></i>
+                <h4>Not in any waiting lists</h4>
+                <p class="text-muted mb-4">You're not currently waiting at any barber shops. Find a shop and join their waiting list!</p>
+                <a href="{% url 'shop_list' %}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-store me-2"></i>Find Barber Shops
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% block extra_js %}
+<script>
+function leaveWaitingList(entryId) {
+    if (confirm('Are you sure you want to leave this waiting list? You will lose your current position.')) {
+        fetch(`/waiting-lists/leave/${entryId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert(data.error || 'Failed to leave waiting list');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred');
+        });
+    }
+}
+
+// Auto-refresh every 30 seconds to get real-time updates
+setInterval(function() {
+    location.reload();
+}, 30000);
+</script>
+{% endblock %}
+
+{% endblock %}

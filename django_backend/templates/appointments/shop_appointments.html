@@ -1,0 +1,457 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Shop Appointments - {{ shop.name }} - Barber Management System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-calendar-alt me-2"></i>Appointments for {{ shop.name }}</h2>
+            <a href="{% url 'shop_dashboard' %}" class="btn btn-outline-dark">
+                <i class="fas fa-tachometer-alt me-1"></i>Back to Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Stats -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-center bg-primary text-white">
+            <div class="card-body">
+                <h5 class="card-title">Total Appointments</h5>
+                <p class="card-text display-6 fw-bold">{{ appointments.count }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center bg-warning text-white">
+            <div class="card-body">
+                <h5 class="card-title">Scheduled</h5>
+                <p class="card-text display-6 fw-bold">{{ appointments|length }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center bg-info text-white">
+            <div class="card-body">
+                <h5 class="card-title">In Progress</h5>
+                <p class="card-text display-6 fw-bold">0</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center bg-success text-white">
+            <div class="card-body">
+                <h5 class="card-title">Completed Today</h5>
+                <p class="card-text display-6 fw-bold">0</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if appointments %}
+<!-- Appointments Table -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-list me-2"></i>All Appointments</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Customer</th>
+                                <th>Service</th>
+                                <th>Status</th>
+                                <th>Notes</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for appointment in appointments %}
+                            <tr>
+                                <td>
+                                    <strong>{{ appointment.appointment_date|date:"M d, Y" }}</strong><br>
+                                    <small class="text-muted">{{ appointment.appointment_date|date:"l" }}</small>
+                                </td>
+                                <td>
+                                    <strong>{{ appointment.appointment_time|time:"g:i A" }}</strong>
+                                </td>
+                                <td>
+                                    <strong>{{ appointment.customer.first_name|default:appointment.customer.username }} {{ appointment.customer.last_name|default:"" }}</strong><br>
+                                    {% if appointment.customer.phone_number %}
+                                        <small class="text-muted">
+                                            <i class="fas fa-phone me-1"></i>{{ appointment.customer.phone_number }}
+                                        </small>
+                                    {% endif %}
+                                </td>
+                                <td>{{ appointment.service_description|default:"Not specified" }}</td>
+                                <td>
+                                    <span class="badge 
+                                        {% if appointment.status == 'scheduled' %}bg-primary{% endif %}
+                                        {% if appointment.status == 'in_progress' %}bg-warning{% endif %}
+                                        {% if appointment.status == 'completed' %}bg-success{% endif %}
+                                        {% if appointment.status == 'cancelled' %}bg-danger{% endif %}
+                                    ">
+                                        {{ appointment.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if appointment.notes %}
+                                        <span data-bs-toggle="tooltip" title="{{ appointment.notes }}">
+                                            {{ appointment.notes|truncatechars:30 }}
+                                        </span>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if appointment.status == 'scheduled' %}
+                                        <div class="btn-group" role="group">
+                                            <button class="btn btn-sm btn-warning" onclick="startService({{ appointment.id }})" title="Start Service">
+                                                <i class="fas fa-play"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-success" onclick="completeService({{ appointment.id }})" title="Mark Completed">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-danger" onclick="cancelAppointment({{ appointment.id }})" title="Cancel">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                    {% elif appointment.status == 'in_progress' %}
+                                        <button class="btn btn-sm btn-success" onclick="completeService({{ appointment.id }})" title="Mark Completed">
+                                            <i class="fas fa-check"></i> Complete
+                                        </button>
+                                    {% elif appointment.status == 'completed' %}
+                                        <span class="text-success">
+                                            <i class="fas fa-check-circle"></i> Done
+                                        </span>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<!-- No Appointments -->
+<div class="row">
+    <div class="col-12">
+        <div class="card text-center">
+            <div class="card-body py-5">
+                <i class="fas fa-calendar-times fa-4x text-muted mb-4"></i>
+                <h4>No appointments yet</h4>
+                <p class="text-muted mb-4">You don't have any appointments scheduled yet. Customers can book appointments with your shop.</p>
+                <div class="row justify-content-center">
+                    <div class="col-md-6">
+                        <div class="alert alert-info">
+                            <i class="fas fa-lightbulb me-2"></i>
+                            <strong>Tips to get more appointments:</strong>
+                            <ul class="text-start mt-2 mb-0">
+                                <li>Make sure your shop information is complete</li>
+                                <li>Keep your waiting list active</li>
+                                <li>Provide good service to get repeat customers</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Filter Options -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-filter me-2"></i>Filter Appointments</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <label for="statusFilter" class="form-label">Status</label>
+                        <select class="form-control" id="statusFilter" onchange="filterByStatus()">
+                            <option value="all">All Statuses</option>
+                            <option value="scheduled">Scheduled</option>
+                            <option value="in_progress">In Progress</option>
+                            <option value="completed">Completed</option>
+                            <option value="cancelled">Cancelled</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="dateFilter" class="form-label">Date</label>
+                        <select class="form-control" id="dateFilter" onchange="filterByDate()">
+                            <option value="all">All Dates</option>
+                            <option value="today">Today</option>
+                            <option value="tomorrow">Tomorrow</option>
+                            <option value="this_week">This Week</option>
+                            <option value="this_month">This Month</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 d-flex align-items-end">
+                        <button class="btn btn-outline-secondary me-2" onclick="resetFilters()">
+                            <i class="fas fa-undo me-1"></i>Reset Filters
+                        </button>
+                        <button class="btn btn-primary" onclick="exportAppointments()">
+                            <i class="fas fa-download me-1"></i>Export
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+// Initialize tooltips
+document.addEventListener('DOMContentLoaded', function() {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+
+function startService(appointmentId) {
+    if (confirm('Mark this appointment as in progress?')) {
+        fetch(`/appointments/start/${appointmentId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showMessage(data.message, 'success');
+                updateAppointmentRow(appointmentId, data.new_status);
+            } else {
+                showMessage(data.error || 'Failed to start appointment', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showMessage('An error occurred', 'error');
+        });
+    }
+}
+
+function completeService(appointmentId) {
+    if (confirm('Mark this appointment as completed?')) {
+        fetch(`/appointments/complete/${appointmentId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showMessage(data.message, 'success');
+                updateAppointmentRow(appointmentId, data.new_status);
+            } else {
+                showMessage(data.error || 'Failed to complete appointment', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showMessage('An error occurred', 'error');
+        });
+    }
+}
+
+function cancelAppointment(appointmentId) {
+    if (confirm('Are you sure you want to cancel this appointment? The customer will be notified.')) {
+        fetch(`/appointments/cancel-by-shop/${appointmentId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showMessage(data.message, 'success');
+                updateAppointmentRow(appointmentId, data.new_status);
+            } else {
+                showMessage(data.error || 'Failed to cancel appointment', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showMessage('An error occurred', 'error');
+        });
+    }
+}
+
+function filterByStatus() {
+    const status = document.getElementById('statusFilter').value;
+    const rows = document.querySelectorAll('tbody tr');
+    
+    rows.forEach(row => {
+        const statusBadge = row.querySelector('.badge');
+        if (!statusBadge) return;
+        
+        if (status === 'all') {
+            row.style.display = 'table-row';
+        } else {
+            const rowStatus = statusBadge.classList.contains('bg-primary') ? 'scheduled' :
+                           statusBadge.classList.contains('bg-warning') ? 'in_progress' :
+                           statusBadge.classList.contains('bg-success') ? 'completed' :
+                           statusBadge.classList.contains('bg-danger') ? 'cancelled' : '';
+            
+            row.style.display = rowStatus === status ? 'table-row' : 'none';
+        }
+    });
+}
+
+function filterByDate() {
+    const dateFilter = document.getElementById('dateFilter').value;
+    // TODO: Implement date filtering logic
+    console.log('Filter by date:', dateFilter);
+}
+
+function resetFilters() {
+    document.getElementById('statusFilter').value = 'all';
+    document.getElementById('dateFilter').value = 'all';
+    
+    const rows = document.querySelectorAll('tbody tr');
+    rows.forEach(row => {
+        row.style.display = 'table-row';
+    });
+}
+
+function exportAppointments() {
+    // TODO: Implement export functionality
+    alert('Export feature - to be implemented');
+}
+
+// Helper function to show messages
+function showMessage(message, type) {
+    // Remove any existing alerts
+    const existingAlerts = document.querySelectorAll('.alert-temp');
+    existingAlerts.forEach(alert => alert.remove());
+    
+    // Create new alert
+    const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+    const iconClass = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle';
+    
+    const alertHtml = `
+        <div class="alert ${alertClass} alert-dismissible fade show alert-temp" role="alert">
+            <i class="fas ${iconClass} me-2"></i>
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    
+    // Insert at the top of the content
+    const contentDiv = document.querySelector('.row');
+    contentDiv.insertAdjacentHTML('beforebegin', alertHtml);
+    
+    // Auto-dismiss after 5 seconds
+    setTimeout(() => {
+        const tempAlert = document.querySelector('.alert-temp');
+        if (tempAlert) {
+            tempAlert.remove();
+        }
+    }, 5000);
+}
+
+// Helper function to update appointment row status
+function updateAppointmentRow(appointmentId, newStatus) {
+    const rows = document.querySelectorAll('tbody tr');
+    
+    rows.forEach(row => {
+        const actionButtons = row.querySelector('.btn-group, .btn-sm');
+        if (!actionButtons) return;
+        
+        // Check if this is the correct row by looking for the appointment ID in button onclick attributes
+        const buttons = row.querySelectorAll('button[onclick*="' + appointmentId + '"]');
+        if (buttons.length === 0) return;
+        
+        // Update status badge
+        const statusBadge = row.querySelector('.badge');
+        if (statusBadge) {
+            // Remove old classes
+            statusBadge.classList.remove('bg-primary', 'bg-warning', 'bg-success', 'bg-danger');
+            
+            // Add new class and text based on status
+            switch (newStatus) {
+                case 'scheduled':
+                    statusBadge.classList.add('bg-primary');
+                    statusBadge.textContent = 'Scheduled';
+                    break;
+                case 'in_progress':
+                    statusBadge.classList.add('bg-warning');
+                    statusBadge.textContent = 'In Progress';
+                    break;
+                case 'completed':
+                    statusBadge.classList.add('bg-success');
+                    statusBadge.textContent = 'Completed';
+                    break;
+                case 'cancelled':
+                    statusBadge.classList.add('bg-danger');
+                    statusBadge.textContent = 'Cancelled';
+                    break;
+            }
+        }
+        
+        // Update action buttons
+        const actionCell = row.querySelector('td:last-child');
+        if (actionCell) {
+            let newButtonsHtml = '';
+            
+            if (newStatus === 'scheduled') {
+                newButtonsHtml = `
+                    <div class="btn-group" role="group">
+                        <button class="btn btn-sm btn-warning" onclick="startService(${appointmentId})" title="Start Service">
+                            <i class="fas fa-play"></i>
+                        </button>
+                        <button class="btn btn-sm btn-success" onclick="completeService(${appointmentId})" title="Mark Completed">
+                            <i class="fas fa-check"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="cancelAppointment(${appointmentId})" title="Cancel">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `;
+            } else if (newStatus === 'in_progress') {
+                newButtonsHtml = `
+                    <button class="btn btn-sm btn-success" onclick="completeService(${appointmentId})" title="Mark Completed">
+                        <i class="fas fa-check"></i> Complete
+                    </button>
+                `;
+            } else if (newStatus === 'completed') {
+                newButtonsHtml = `
+                    <span class="text-success">
+                        <i class="fas fa-check-circle"></i> Done
+                    </span>
+                `;
+            } else {
+                newButtonsHtml = '<span class="text-muted">-</span>';
+            }
+            
+            actionCell.innerHTML = newButtonsHtml;
+        }
+    });
+}
+</script>
+{% endblock %}
+
+{% endblock %}
