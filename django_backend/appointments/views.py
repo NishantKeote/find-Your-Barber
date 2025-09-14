@@ -1,0 +1,111 @@
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.utils import timezone
+from .models import Appointment
+from shops.models import Shop
+from datetime import datetime, date, timedelta
+
+@login_required
+def book_appointment(request, shop_id):
+    """Customer books appointment at a shop"""
+    if request.user.role != 'customer':
+        messages.error(request, 'Only customers can book appointments')
+        return redirect('shop_dashboard')
+    
+    shop = get_object_or_404(Shop, id=shop_id, is_active=True)
+    
+    if request.method == 'POST':
+        appointment_date = request.POST.get('appointment_date')
+        appointment_time = request.POST.get('appointment_time')
+        service_description = request.POST.get('service_description', '')
+        notes = request.POST.get('notes', '')
+        
+        try:
+            # Parse date and time
+            appointment_date = datetime.strptime(appointment_date, '%Y-%m-%d').date()
+            appointment_time = datetime.strptime(appointment_time, '%H:%M').time()
+            
+            # Check if appointment is in the future
+            appointment_datetime = datetime.combine(appointment_date, appointment_time)
+            if appointment_datetime <= timezone.now():
+                messages.error(request, 'Appointment must be in the future')
+                return render(request, 'appointments/book.html', {'shop': shop})
+            
+            # Check for existing appointments at the same time
+            existing_appointment = Appointment.objects.filter(
+                shop=shop,
+                appointment_date=appointment_date,
+                appointment_time=appointment_time,
+                status__in=['scheduled', 'in_progress']
+            ).exists()
+            
+            if existing_appointment:
+                messages.error(request, 'This time slot is already booked')
+                return render(request, 'appointments/book.html', {'shop': shop})
+            
+            # Create appointment
+            appointment = Appointment.objects.create(
+                customer=request.user,
+                shop=shop,
+                appointment_date=appointment_date,
+                appointment_time=appointment_time,
+                service_description=service_description,
+                notes=notes
+            )
+            
+            messages.success(request, f'Appointment booked successfully for {appointment_date} at {appointment_time}')
+            return redirect('my_appointments')
+            
+        except ValueError:
+            messages.error(request, 'Invalid date or time format')
+    
+    return render(request, 'appointments/book.html', {'shop': shop})
+
+@login_required
+def my_appointments(request):
+    """View user's appointments"""
+    if request.user.role != 'customer':
+        messages.error(request, 'Access denied')
+        return redirect('shop_dashboard')
+    
+    appointments = request.user.appointments.all().order_by('-appointment_date', '-appointment_time')
+    
+    return render(request, 'appointments/my_appointments.html', {
+        'appointments': appointments
+    })
+
+@login_required
+@require_POST
+def cancel_appointment(request, appointment_id):
+    """Cancel an appointment"""
+    appointment = get_object_or_404(Appointment, id=appointment_id, customer=request.user)
+    
+    if appointment.status not in ['scheduled']:
+        return JsonResponse({'error': 'Cannot cancel this appointment'}, status=400)
+    
+    appointment.status = 'cancelled'
+    appointment.save()
+    
+    return JsonResponse({'success': True})
+
+@login_required
+def shop_appointments(request):
+    """Shop owner view of appointments"""
+    if request.user.role != 'shop_owner':
+        messages.error(request, 'Access denied')
+        return redirect('dashboard')
+    
+    if not hasattr(request.user, 'shop'):
+        messages.error(request, 'Please set up your shop first')
+        return redirect('shop_setup')
+    
+    shop = request.user.shop
+    appointments = shop.appointments.all().order_by('-appointment_date', '-appointment_time')
+    
+    return render(request, 'appointments/shop_appointments.html', {
+        'appointments': appointments,
+        'shop': shop
+    })
