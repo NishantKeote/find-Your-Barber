@@ -14,40 +14,181 @@
     </div>
 </div>
 
-<div class="row mb-4">
-    <div class="col-md-4">
-        <div class="card text-center">
-            <div class="card-body">
-                <h5 class="card-title">
-                    <i class="fas fa-calendar-check text-primary me-2"></i>
-                    My Appointments
-                </h5>
-                <p class="card-text display-4 fw-bold text-primary">{{ appointments.count }}</p>
-                <a href="{% url 'my_appointments' %}" class="btn btn-primary">View All</a>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card text-center">
-            <div class="card-body">
-                <h5 class="card-title">
-                    <i class="fas fa-clock text-warning me-2"></i>
-                    Active Waiting Lists
-                </h5>
-                <p class="card-text display-4 fw-bold text-warning">{{ waiting_entries.count }}</p>
-                <a href="{% url 'my_waiting_lists' %}" class="btn btn-warning">View All</a>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card text-center">
-            <div class="card-body">
-                <h5 class="card-title">
-                    <i class="fas fa-store text-success me-2"></i>
+<!-- Dashboard Cards Grid -->
+<div class="row g-4 mb-4">
+    <!-- Find Barbers - Primary Feature -->
+    <div class="col-lg-3 col-md-6 col-sm-6">
+        <div class="card text-center h-100 dashboard-card border-success shadow-sm" data-aos="fade-up" data-aos-delay="100">
+            <div class="card-body d-flex flex-column p-4">
+                <div class="card-icon mb-3">
+                    <i class="fas fa-store fa-3x text-success"></i>
+                </div>
+                <h5 class="card-title fw-bold mb-3 text-success">
                     Find Barbers
                 </h5>
-                <p class="card-text">Discover nearby barber shops</p>
-                <a href="{% url 'shop_list' %}" class="btn btn-success">Browse Shops</a>
+                <p class="card-text text-muted flex-grow-1 mb-4">Discover nearby barber shops and book appointments</p>
+                <a href="{% url 'shop_list' %}" class="btn btn-success w-100 py-2">
+                    <i class="fas fa-search me-2"></i>Browse Shops
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- My Appointments -->
+    <div class="col-lg-3 col-md-6 col-sm-6">
+        <div class="card text-center h-100 dashboard-card border-primary shadow-sm" data-aos="fade-up" data-aos-delay="200">
+            <div class="card-body d-flex flex-column p-4">
+                <div class="card-icon mb-3">
+                    <i class="fas fa-calendar-check fa-3x text-primary"></i>
+                </div>
+                <h5 class="card-title fw-bold mb-3 text-primary">
+                    My Appointments
+                </h5>
+                <div class="flex-grow-1 d-flex align-items-center justify-content-center mb-4">
+                    <span class="display-3 fw-bold text-primary">{{ appointments.count }}</span>
+                </div>
+                <a href="{% url 'my_appointments' %}" class="btn btn-primary w-100 py-2">
+                    <i class="fas fa-list me-2"></i>View All
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Active Waiting Lists -->
+    <div class="col-lg-3 col-md-6 col-sm-6">
+        <div class="card text-center h-100 dashboard-card border-warning shadow-sm" data-aos="fade-up" data-aos-delay="300">
+            <div class="card-body d-flex flex-column p-4">
+                <div class="card-icon mb-3">
+                    <i class="fas fa-clock fa-3x text-warning"></i>
+                </div>
+                <h5 class="card-title fw-bold mb-3 text-warning">
+                    Waiting Lists
+                </h5>
+                <div class="flex-grow-1 d-flex align-items-center justify-content-center mb-4">
+                    <span class="display-3 fw-bold text-warning">{{ waiting_entries.count }}</span>
+                </div>
+                <a href="{% url 'my_waiting_lists' %}" class="btn btn-warning w-100 py-2">
+                    <i class="fas fa-list-ul me-2"></i>View All
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Haircut AI Suggestions -->
+    <div class="col-lg-3 col-md-6 col-sm-6">
+        <div class="card text-center h-100 dashboard-card border-info shadow-sm" data-aos="fade-up" data-aos-delay="400">
+            <div class="card-body d-flex flex-column p-4">
+                <div class="card-icon mb-3">
+                    <i class="fas fa-magic fa-3x text-info"></i>
+                </div>
+                <h5 class="card-title fw-bold mb-3 text-info">
+                    Haircut AI
+                </h5>
+                <p class="card-text text-muted flex-grow-1 mb-4">Get AI-powered haircut suggestions</p>
+                <a href="{% url 'haircut_suggestions' %}" class="btn btn-info w-100 py-2">
+                    <i class="fas fa-brain me-2"></i>Try AI Suggestions
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Additional Quick Actions Row -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card" data-aos="fade-up" data-aos-delay="500">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-4">
+                        <a href="{% url 'browse_styles' %}" class="btn btn-outline-secondary btn-lg mb-2 w-100">
+                            <i class="fas fa-th-large d-block mb-2"></i>
+                            <small>Browse<br>Styles</small>
+                        </a>
+                    </div>
+                    <div class="col-md-4">
+                        {% if recommended_shops %}
+                            <div class="btn btn-outline-success btn-lg mb-2 w-100" style="cursor: default; position: relative;">
+                                <i class="fas fa-thumbs-up d-block mb-2"></i>
+                                <small>Recommended Shops<br>(According to Your Choices)</small>
+                                <!-- Dropdown for recommended shops -->
+                                <div class="dropdown-menu position-absolute" style="top: 100%; left: 0; right: 0; z-index: 1000; display: none;" id="recommendedShopsDropdown">
+                                    {% for shop in recommended_shops|slice:":3" %}
+                                    <a class="dropdown-item d-flex align-items-center py-2" href="{% url 'shop_detail' shop.id %}">
+                                        {% if shop.image %}
+                                            <img src="{{ shop.image.url }}" alt="{{ shop.name }}" class="rounded-circle me-2" style="width: 30px; height: 30px; object-fit: cover;">
+                                        {% else %}
+                                            <div class="bg-light rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 30px; height: 30px;">
+                                                <i class="fas fa-store text-muted" style="font-size: 0.8rem;"></i>
+                                            </div>
+                                        {% endif %}
+                                        <div class="flex-grow-1">
+                                            <div class="fw-bold small">{{ shop.name }}</div>
+                                            <div class="text-muted d-flex align-items-center" style="font-size: 0.7rem;">
+                                                <span class="me-2">{{ shop.address|truncatechars:20 }}</span>
+                                                {% if shop.get_average_rating > 0 %}
+                                                    <div class="d-flex align-items-center">
+                                                        <i class="fas fa-star text-warning me-1" style="font-size: 0.6rem;"></i>
+                                                        <span>{{ shop.get_average_rating }}</span>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </a>
+                                    {% endfor %}
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item text-center" href="{% url 'shop_list' %}">
+                                        <i class="fas fa-search me-1"></i>
+                                        <small>Browse All Shops</small>
+                                    </a>
+                                </div>
+                            </div>
+                        {% else %}
+                            <a href="{% url 'shop_list' %}" class="btn btn-outline-success btn-lg mb-2 w-100">
+                                <i class="fas fa-thumbs-up d-block mb-2"></i>
+                                <small>Recommended Shops<br>(According to Your Choices)</small>
+                            </a>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4">
+                        {% if recently_visited_shops %}
+                            <div class="btn btn-outline-info btn-lg mb-2 w-100" style="cursor: default; position: relative;">
+                                <i class="fas fa-history d-block mb-2"></i>
+                                <small>Recently Visited<br>Shops</small>
+                                <!-- Dropdown for recent shops -->
+                                <div class="dropdown-menu position-absolute" style="top: 100%; left: 0; right: 0; z-index: 1000; display: none;" id="recentShopsDropdown">
+                                    {% for shop in recently_visited_shops|slice:":3" %}
+                                    <a class="dropdown-item d-flex align-items-center py-2" href="{% url 'shop_detail' shop.id %}">
+                                        {% if shop.image %}
+                                            <img src="{{ shop.image.url }}" alt="{{ shop.name }}" class="rounded-circle me-2" style="width: 30px; height: 30px; object-fit: cover;">
+                                        {% else %}
+                                            <div class="bg-light rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 30px; height: 30px;">
+                                                <i class="fas fa-store text-muted" style="font-size: 0.8rem;"></i>
+                                            </div>
+                                        {% endif %}
+                                        <div class="flex-grow-1">
+                                            <div class="fw-bold small">{{ shop.name }}</div>
+                                            <div class="text-muted" style="font-size: 0.75rem;">{{ shop.address|truncatechars:25 }}</div>
+                                        </div>
+                                    </a>
+                                    {% endfor %}
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item text-center" href="{% url 'shop_list' %}">
+                                        <i class="fas fa-search me-1"></i>
+                                        <small>View All Shops</small>
+                                    </a>
+                                </div>
+                            </div>
+                        {% else %}
+                            <a href="{% url 'shop_list' %}" class="btn btn-outline-info btn-lg mb-2 w-100">
+                                <i class="fas fa-history d-block mb-2"></i>
+                                <small>Recently Visited<br>Shops</small>
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -79,12 +220,7 @@
                                 <td>{{ appointment.appointment_date|date:"M d, Y" }}</td>
                                 <td>{{ appointment.appointment_time|time:"g:i A" }}</td>
                                 <td>
-                                    <span class="badge 
-                                        {% if appointment.status == 'scheduled' %}bg-primary{% endif %}
-                                        {% if appointment.status == 'in_progress' %}bg-warning{% endif %}
-                                        {% if appointment.status == 'completed' %}bg-success{% endif %}
-                                        {% if appointment.status == 'cancelled' %}bg-danger{% endif %}
-                                    ">
+                                    <span class="badge{% if appointment.status == 'scheduled' %} bg-primary{% elif appointment.status == 'in_progress' %} bg-warning{% elif appointment.status == 'completed' %} bg-success{% elif appointment.status == 'cancelled' %} bg-danger{% endif %}">
                                         {{ appointment.get_status_display }}
                                     </span>
                                 </td>
@@ -142,12 +278,7 @@
                                     {% endif %}
                                 </td>
                                 <td>
-                                    <span class="badge 
-                                        {% if entry.status == 'waiting' %}bg-warning{% endif %}
-                                        {% if entry.status == 'called' %}bg-primary{% endif %}
-                                        {% if entry.status == 'served' %}bg-success{% endif %}
-                                        {% if entry.status == 'left' %}bg-secondary{% endif %}
-                                    ">
+                                    <span class="badge{% if entry.status == 'waiting' %} bg-warning{% elif entry.status == 'called' %} bg-primary{% elif entry.status == 'served' %} bg-success{% elif entry.status == 'left' %} bg-secondary{% endif %}">
                                         {{ entry.get_status_display }}
                                     </span>
                                 </td>
@@ -203,7 +334,141 @@ function leaveWaitingList(entryId) {
         console.log('Leave waiting list:', entryId);
     }
 }
+
+// Shop dropdown functionality (for both Recently Visited and Recommended)
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle Recently Visited Shops dropdown
+    const recentDropdown = document.getElementById('recentShopsDropdown');
+    if (recentDropdown) {
+        setupDropdown(recentDropdown);
+    }
+    
+    // Handle Recommended Shops dropdown
+    const recommendedDropdown = document.getElementById('recommendedShopsDropdown');
+    if (recommendedDropdown) {
+        setupDropdown(recommendedDropdown);
+    }
+    
+    function setupDropdown(dropdown) {
+        const btn = dropdown.parentElement;
+        let isDropdownOpen = false;
+        
+        // Toggle dropdown on click
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Close other dropdowns first
+            closeAllDropdowns(dropdown);
+            
+            isDropdownOpen = !isDropdownOpen;
+            dropdown.style.display = isDropdownOpen ? 'block' : 'none';
+        });
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!btn.contains(e.target)) {
+                isDropdownOpen = false;
+                dropdown.style.display = 'none';
+            }
+        });
+        
+        // Prevent dropdown from closing when clicking inside it
+        dropdown.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+    }
+    
+    function closeAllDropdowns(except = null) {
+        const dropdowns = ['recentShopsDropdown', 'recommendedShopsDropdown'];
+        dropdowns.forEach(id => {
+            const dropdown = document.getElementById(id);
+            if (dropdown && dropdown !== except) {
+                dropdown.style.display = 'none';
+            }
+        });
+    }
+});
 </script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Dashboard Cards Styling */
+    .dashboard-card {
+        transition: all 0.3s ease;
+        border-width: 2px;
+        min-height: 280px;
+    }
+    
+    .dashboard-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+    }
+    
+    .dashboard-card .card-body {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    
+    .dashboard-card .card-icon {
+        margin-bottom: 1rem;
+    }
+    
+    .dashboard-card .card-title {
+        font-size: 1.1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .dashboard-card .card-text {
+        font-size: 0.9rem;
+        line-height: 1.5;
+    }
+    
+    .dashboard-card .btn {
+        font-weight: 600;
+        border-width: 2px;
+        transition: all 0.3s ease;
+    }
+    
+    .dashboard-card .btn:hover {
+        transform: translateY(-1px);
+    }
+    
+    /* Responsive card adjustments */
+    @media (max-width: 768px) {
+        .dashboard-card {
+            min-height: 240px;
+            margin-bottom: 1rem;
+        }
+        
+        .dashboard-card .card-icon i {
+            font-size: 2.5rem !important;
+        }
+        
+        .dashboard-card .display-3 {
+            font-size: 2.5rem !important;
+        }
+    }
+    
+    /* Color theme consistency */
+    .border-success {
+        border-color: var(--success-green) !important;
+    }
+    
+    .border-primary {
+        border-color: var(--primary-blue) !important;
+    }
+    
+    .border-warning {
+        border-color: var(--warning-yellow) !important;
+    }
+    
+    .border-info {
+        border-color: var(--info-blue) !important;
+    }
+</style>
 {% endblock %}
 
 {% endblock %}

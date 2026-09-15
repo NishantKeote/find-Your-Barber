@@ -41,21 +41,93 @@
                         </div>
                     </div>
                     
-                    <div class="mb-3">
-                        <label for="service_description" class="form-label">Service Required</label>
+                    <!-- Services Selection -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-cut me-2"></i>Select Services *
+                        </label>
+                        <div class="services-grid">
+                            {% if services %}
+                                {% for service in services %}
+                                <div class="service-item mb-3">
+                                    <div class="card service-card h-100">
+                                        <div class="card-body p-3">
+                                            <div class="form-check">
+                                                <input class="form-check-input service-checkbox" 
+                                                       type="checkbox" 
+                                                       name="services" 
+                                                       value="{{ service.id }}" 
+                                                       id="service_{{ service.id }}"
+                                                       data-price="{{ service.price }}"
+                                                       data-duration="{{ service.duration }}">
+                                                <label class="form-check-label w-100" for="service_{{ service.id }}">
+                                                    <div class="d-flex justify-content-between align-items-start">
+                                                        <div class="flex-grow-1">
+                                                            <h6 class="service-name mb-1 fw-bold">{{ service.name }}</h6>
+                                                            {% if service.description %}
+                                                                <p class="service-description text-muted small mb-2">{{ service.description|truncatechars:100 }}</p>
+                                                            {% endif %}
+                                                            <div class="service-details">
+                                                                <span class="badge bg-primary me-2">
+                                                                    <i class="fas fa-clock me-1"></i>{{ service.duration }} min
+                                                                </span>
+                                                                {% if service.predefined_service.category %}
+                                                                    <span class="badge bg-secondary me-2">
+                                                                        {{ service.predefined_service.category.display_name }}
+                                                                    </span>
+                                                                {% endif %}
+                                                            </div>
+                                                        </div>
+                                                        <div class="text-end">
+                                                            <span class="service-price h5 text-success fw-bold">₹{{ service.price }}</span>
+                                                        </div>
+                                                    </div>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    This shop hasn't added any services yet. You can still book an appointment and discuss services in person.
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Selected Services Summary -->
+                        <div id="selected-services-summary" class="mt-3" style="display: none;">
+                            <div class="card bg-light">
+                                <div class="card-body p-3">
+                                    <h6 class="fw-bold mb-3">
+                                        <i class="fas fa-shopping-cart me-2"></i>Selected Services
+                                    </h6>
+                                    <div id="selected-services-list"></div>
+                                    <hr>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <strong>Total:</strong>
+                                        <div>
+                                            <span id="total-price" class="h5 text-success fw-bold me-3">₹0.00</span>
+                                            <span id="total-duration" class="text-muted">
+                                                <i class="fas fa-clock me-1"></i><span id="total-minutes">0</span> min
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Special Request Field -->
+                    <div class="mb-4">
+                        <label for="special_request" class="form-label">Special Requests</label>
                         <div class="input-group">
                             <span class="input-group-text">
-                                <i class="fas fa-cut"></i>
+                                <i class="fas fa-comment"></i>
                             </span>
-                            <select class="form-control" id="service_description" name="service_description">
-                                <option value="">Select a service (optional)</option>
-                                <option value="Haircut">Haircut</option>
-                                <option value="Beard Trim">Beard Trim</option>
-                                <option value="Haircut + Beard Trim">Haircut + Beard Trim</option>
-                                <option value="Shave">Shave</option>
-                                <option value="Hair Wash">Hair Wash</option>
-                                <option value="Other">Other</option>
-                            </select>
+                            <textarea class="form-control" id="special_request" name="special_request" rows="3" 
+                                      placeholder="Any special requests or preferences (optional)"></textarea>
                         </div>
                     </div>
                     
@@ -116,6 +188,92 @@
 // Set minimum date to today
 document.getElementById('appointment_date').min = new Date().toISOString().split('T')[0];
 
+// Service selection functionality
+let selectedServices = [];
+let totalPrice = 0;
+let totalDuration = 0;
+
+function updateSelectedServices() {
+    const checkboxes = document.querySelectorAll('.service-checkbox:checked');
+    const summaryDiv = document.getElementById('selected-services-summary');
+    const listDiv = document.getElementById('selected-services-list');
+    
+    selectedServices = [];
+    totalPrice = 0;
+    totalDuration = 0;
+    
+    if (checkboxes.length > 0) {
+        summaryDiv.style.display = 'block';
+        listDiv.innerHTML = '';
+        
+        checkboxes.forEach(checkbox => {
+            const serviceId = checkbox.value;
+            const serviceName = checkbox.closest('.service-card').querySelector('.service-name').textContent;
+            const servicePrice = parseFloat(checkbox.dataset.price);
+            const serviceDuration = parseInt(checkbox.dataset.duration);
+            
+            selectedServices.push({
+                id: serviceId,
+                name: serviceName,
+                price: servicePrice,
+                duration: serviceDuration
+            });
+            
+            totalPrice += servicePrice;
+            totalDuration += serviceDuration;
+            
+            // Add to summary list
+            const serviceDiv = document.createElement('div');
+            serviceDiv.className = 'd-flex justify-content-between align-items-center mb-2';
+            serviceDiv.innerHTML = `
+                <div>
+                    <span class="fw-bold">${serviceName}</span>
+                    <span class="text-muted ms-2">(${serviceDuration} min)</span>
+                </div>
+                                <span class="text-success fw-bold">₹${servicePrice.toFixed(2)}</span>
+            `;
+            listDiv.appendChild(serviceDiv);
+        });
+        
+        // Update totals
+        document.getElementById('total-price').textContent = `₹${totalPrice.toFixed(2)}`;
+        document.getElementById('total-minutes').textContent = totalDuration;
+    } else {
+        summaryDiv.style.display = 'none';
+    }
+}
+
+// Add event listeners to service checkboxes
+document.addEventListener('DOMContentLoaded', function() {
+    const serviceCheckboxes = document.querySelectorAll('.service-checkbox');
+    serviceCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateSelectedServices);
+    });
+    
+    // Make service cards clickable
+    const serviceCards = document.querySelectorAll('.service-card');
+    serviceCards.forEach(card => {
+        card.addEventListener('click', function(e) {
+            if (e.target.type !== 'checkbox') {
+                const checkbox = card.querySelector('.service-checkbox');
+                checkbox.checked = !checkbox.checked;
+                updateSelectedServices();
+            }
+        });
+        
+        // Add hover effect
+        card.addEventListener('mouseenter', function() {
+            card.style.transform = 'translateY(-2px)';
+            card.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.1)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            card.style.transform = 'translateY(0)';
+            card.style.boxShadow = '';
+        });
+    });
+});
+
 // Form validation
 document.querySelector('form').addEventListener('submit', function(e) {
     const date = document.getElementById('appointment_date').value;
@@ -135,8 +293,60 @@ document.querySelector('form').addEventListener('submit', function(e) {
         alert('Appointment must be scheduled for a future date and time.');
         return;
     }
+    
+    // Check if at least one service is selected (if services are available)
+    const hasServices = document.querySelectorAll('.service-checkbox').length > 0;
+    const selectedServiceCount = document.querySelectorAll('.service-checkbox:checked').length;
+    
+    if (hasServices && selectedServiceCount === 0) {
+        e.preventDefault();
+        alert('Please select at least one service for your appointment.');
+        return;
+    }
 });
 </script>
+
+<style>
+.service-card {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid #e9ecef;
+}
+
+.service-card:hover {
+    border-color: #007bff;
+}
+
+.service-checkbox:checked + .form-check-label .service-card {
+    border-color: #28a745;
+    background-color: #f8fff8;
+}
+
+.service-item {
+    transition: all 0.3s ease;
+}
+
+.services-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+}
+
+@media (min-width: 768px) {
+    .services-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.form-check-input:checked {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+.badge {
+    font-size: 0.75rem;
+}
+</style>
 {% endblock %}
 
 {% endblock %}

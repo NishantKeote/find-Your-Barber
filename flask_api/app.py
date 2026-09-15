@@ -9,6 +9,7 @@ from geopy.geocoders import Nominatim
 import sqlite3
 import os
 
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'flask-secret-key-for-barber-management'
 CORS(app, origins=["http://localhost:8000", "http://127.0.0.1:8000"])
@@ -231,7 +232,7 @@ def search_shops():
         return jsonify({'shops': search_results})
         
     except Exception as e:
-        return jsonResponse({'error': str(e)}), 500
+        raise f"{e}"
 
 @app.route('/api/health')
 def health_check():

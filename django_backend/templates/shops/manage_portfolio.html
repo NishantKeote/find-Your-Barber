@@ -1,0 +1,379 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Manage Portfolio - {{ shop.name }} - Barber Management System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-images me-2"></i>Manage Portfolio</h2>
+            <a href="{% url 'shop_dashboard' %}" class="btn btn-outline-dark">
+                <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Upload New Image Form -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-upload me-2"></i>Upload New Portfolio Image</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data" id="upload-form">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <!-- Image Upload -->
+                            <div class="mb-3">
+                                <label for="image" class="form-label">Choose Image *</label>
+                                <input type="file" class="form-control" name="image" id="image" 
+                                       accept="image/*" required>
+                                <div class="form-text">Maximum file size: 5MB. Supported formats: JPG, PNG, GIF</div>
+                            </div>
+                            
+                            <!-- Image Preview -->
+                            <div id="image-preview" class="mb-3" style="display: none;">
+                                <label class="form-label">Preview</label>
+                                <div class="border rounded p-2 text-center">
+                                    <img id="preview-img" src="" alt="Preview" style="max-width: 100%; max-height: 200px;">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <!-- Title -->
+                            <div class="mb-3">
+                                <label for="title" class="form-label">Title</label>
+                                <input type="text" class="form-control" name="title" id="title" 
+                                       placeholder="e.g., Modern Haircut Style">
+                                <div class="form-text">Optional: Give your work a descriptive title</div>
+                            </div>
+                            
+                            <!-- Description -->
+                            <div class="mb-3">
+                                <label for="description" class="form-label">Description</label>
+                                <textarea class="form-control" name="description" id="description" rows="3"
+                                          placeholder="Describe the style, technique, or occasion..."></textarea>
+                                <div class="form-text">Optional: Add details about this work</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="service_category" class="form-label">Service Category</label>
+                                <select class="form-control" name="service_category" id="service_category">
+                                    <option value="">Select category (optional)</option>
+                                    {% for category in categories %}
+                                        <option value="{{ category.id }}">{{ category.display_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <div class="form-check mt-4">
+                                    <input class="form-check-input" type="checkbox" name="is_featured" id="is_featured">
+                                    <label class="form-check-label" for="is_featured">
+                                        <strong>Featured Image</strong>
+                                    </label>
+                                    <div class="form-text">Featured images appear first in your portfolio</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4 d-flex align-items-end">
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="fas fa-upload me-2"></i>Upload Image
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Portfolio Images -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-photo-video me-2"></i>Your Portfolio</h5>
+                <span class="badge bg-primary">{{ portfolio_images.count }} image{{ portfolio_images.count|pluralize }}</span>
+            </div>
+            <div class="card-body">
+                {% if portfolio_images %}
+                    <div class="row">
+                        {% for image in portfolio_images %}
+                            <div class="col-lg-4 col-md-6 mb-4">
+                                <div class="card portfolio-item h-100 {% if image.is_featured %}border-warning{% endif %}">
+                                    <!-- Image -->
+                                    <div class="portfolio-image-container">
+                                        <img src="{{ image.image.url }}" class="card-img-top portfolio-image" 
+                                             alt="{{ image.title|default:'Portfolio Image' }}">
+                                        
+                                        <!-- Featured Badge -->
+                                        {% if image.is_featured %}
+                                            <div class="featured-badge">
+                                                <span class="badge bg-warning">
+                                                    <i class="fas fa-star me-1"></i>Featured
+                                                </span>
+                                            </div>
+                                        {% endif %}
+                                        
+                                        <!-- Action Buttons Overlay -->
+                                        <div class="portfolio-actions">
+                                            <button class="btn btn-sm btn-light" onclick="viewImage('{{ image.image.url }}', '{{ image.title|default:'Portfolio Image' }}')">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-danger" onclick="deleteImage({{ image.id }}, '{{ image.title|default:'this image' }}')">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Card Body -->
+                                    <div class="card-body d-flex flex-column">
+                                        {% if image.title %}
+                                            <h6 class="card-title fw-bold">{{ image.title }}</h6>
+                                        {% endif %}
+                                        
+                                        {% if image.description %}
+                                            <p class="card-text text-muted small">{{ image.description|truncatechars:100 }}</p>
+                                        {% endif %}
+                                        
+                                        <div class="mt-auto">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    {% if image.service_category %}
+                                                        <span class="badge bg-info">{{ image.service_category.display_name }}</span>
+                                                    {% endif %}
+                                                </div>
+                                                <small class="text-muted">{{ image.uploaded_at|date:"M d, Y" }}</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-images fa-4x text-muted mb-4"></i>
+                        <h5>No portfolio images yet</h5>
+                        <p class="text-muted mb-4">Upload your first image to showcase your work to potential customers.</p>
+                        <div class="alert alert-info">
+                            <i class="fas fa-lightbulb me-2"></i>
+                            <strong>Tips for great portfolio images:</strong>
+                            <ul class="text-start mt-2 mb-0">
+                                <li>Use good lighting and clear photos</li>
+                                <li>Show different angles and styles</li>
+                                <li>Include before/after shots when possible</li>
+                                <li>Add descriptive titles and details</li>
+                            </ul>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Image Modal -->
+<div class="modal fade" id="imageModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="imageModalTitle">Portfolio Image</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="modalImage" src="" alt="" class="img-fluid">
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+// Image preview functionality
+document.getElementById('image').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    const previewContainer = document.getElementById('image-preview');
+    const previewImg = document.getElementById('preview-img');
+    
+    if (file) {
+        // Validate file size (5MB = 5 * 1024 * 1024 bytes)
+        if (file.size > 5 * 1024 * 1024) {
+            showAlert('danger', 'File size must be less than 5MB');
+            e.target.value = '';
+            previewContainer.style.display = 'none';
+            return;
+        }
+        
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            showAlert('danger', 'Please select a valid image file');
+            e.target.value = '';
+            previewContainer.style.display = 'none';
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            previewImg.src = e.target.result;
+            previewContainer.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    } else {
+        previewContainer.style.display = 'none';
+    }
+});
+
+// View image in modal
+function viewImage(imageUrl, title) {
+    document.getElementById('modalImage').src = imageUrl;
+    document.getElementById('imageModalTitle').textContent = title;
+    const modal = new bootstrap.Modal(document.getElementById('imageModal'));
+    modal.show();
+}
+
+// Delete image
+function deleteImage(imageId, title) {
+    if (confirm(`Are you sure you want to delete "${title}"? This action cannot be undone.`)) {
+        fetch(`/shops/api/delete-portfolio-image/${imageId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                showAlert('danger', data.error || 'Failed to delete image');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showAlert('danger', 'An error occurred');
+        });
+    }
+}
+
+// Show alert messages
+function showAlert(type, message) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    // Insert at the top of the content
+    const firstCard = document.querySelector('.card');
+    firstCard.parentNode.insertBefore(alertDiv, firstCard);
+    
+    // Auto-remove after 3 seconds
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.remove();
+        }
+    }, 3000);
+}
+
+// Form submission handling
+document.getElementById('upload-form').addEventListener('submit', function(e) {
+    const imageInput = document.getElementById('image');
+    
+    if (!imageInput.files || imageInput.files.length === 0) {
+        e.preventDefault();
+        showAlert('danger', 'Please select an image to upload.');
+        return;
+    }
+});
+</script>
+
+<style>
+.portfolio-item {
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.portfolio-item:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.portfolio-image-container {
+    position: relative;
+    overflow: hidden;
+}
+
+.portfolio-image {
+    height: 200px;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.portfolio-item:hover .portfolio-image {
+    transform: scale(1.05);
+}
+
+.featured-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 10;
+}
+
+.portfolio-actions {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.portfolio-item:hover .portfolio-actions {
+    opacity: 1;
+}
+
+.portfolio-actions .btn {
+    margin: 0 5px;
+}
+
+.card.border-warning {
+    border-color: var(--warning-yellow) !important;
+    box-shadow: 0 4px 16px rgba(253, 203, 110, 0.2);
+}
+
+#image-preview {
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Modal improvements */
+.modal-body img {
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+</style>
+{% endblock %}
+
+{% endblock %}

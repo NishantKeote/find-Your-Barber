@@ -36,6 +36,7 @@ urlpatterns = [
     path('shops/', include('shops.urls')),
     path('appointments/', include('appointments.urls')),
     path('waiting-lists/', include('waiting_lists.urls')),
+    path('haircut-suggestions/', include('haircut_suggestions.urls')),
 ]
 
 # Serve media files during development

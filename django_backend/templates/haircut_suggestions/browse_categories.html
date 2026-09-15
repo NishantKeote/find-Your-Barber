@@ -1,0 +1,169 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Browse Styles - Barber Management System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-folder me-2"></i>Browse Styles</h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item active">Browse Styles</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <p class="text-muted mb-4">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Choose a category to explore different hairstyles and grooming options. Each folder contains curated styles with examples and recommendations.
+                </p>
+                
+                <div class="row">
+                    {% for item in category_data %}
+                    <div class="col-md-6 col-lg-3 mb-3">
+                        <a href="{% url 'browse_styles' %}?category={{ item.category.id }}" class="text-decoration-none">
+                            <div class="card h-100 folder-card border-2 border-dashed">
+                                <div class="card-body text-center p-4">
+                                    <div class="folder-icon mb-3">
+                                        <i class="{{ item.icon }} fa-3x text-primary"></i>
+                                        <i class="fas fa-folder-open fa-4x folder-overlay"></i>
+                                    </div>
+                                    <h5 class="card-title mb-2">{{ item.category.display_name }}</h5>
+                                    <p class="card-text text-muted small mb-2">{{ item.category.description|truncatechars:60 }}</p>
+                                    <div class="badge bg-secondary">
+                                        {{ item.style_count }} style{{ item.style_count|pluralize }}
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    {% empty %}
+                    <div class="col-12 text-center py-5">
+                        <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+                        <h4>No categories available</h4>
+                        <p class="text-muted">Style categories will appear here once they're created.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recently Popular Styles -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-star me-2"></i>Popular This Month</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <div class="card border-0 bg-light">
+                            <div class="card-body text-center p-3">
+                                <div class="mb-2">
+                                    <i class="fas fa-male fa-2x text-info"></i>
+                                </div>
+                                <h6 class="card-title">Classic Fade</h6>
+                                <small class="text-muted">Most requested men's cut</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card border-0 bg-light">
+                            <div class="card-body text-center p-3">
+                                <div class="mb-2">
+                                    <i class="fas fa-female fa-2x text-danger"></i>
+                                </div>
+                                <h6 class="card-title">Long Layers</h6>
+                                <small class="text-muted">Trending women's style</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card border-0 bg-light">
+                            <div class="card-body text-center p-3">
+                                <div class="mb-2">
+                                    <i class="fas fa-user-tie fa-2x text-success"></i>
+                                </div>
+                                <h6 class="card-title">Full Beard Sculpt</h6>
+                                <small class="text-muted">Professional grooming</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_css %}
+<style>
+    .folder-card {
+        transition: all 0.3s ease;
+        cursor: pointer;
+        border-color: var(--border-color) !important;
+        background-color: var(--card-bg);
+    }
+    
+    .folder-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px var(--shadow-color-hover);
+        border-color: var(--primary-blue) !important;
+    }
+    
+    .folder-icon {
+        position: relative;
+        display: inline-block;
+    }
+    
+    .folder-overlay {
+        position: absolute;
+        top: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: var(--secondary-gray);
+        opacity: 0.3;
+        z-index: 1;
+    }
+    
+    .folder-card:hover .folder-overlay {
+        opacity: 0.6;
+        color: var(--primary-blue);
+    }
+    
+    .folder-icon > i:first-child {
+        position: relative;
+        z-index: 2;
+    }
+    
+    .breadcrumb {
+        background: none;
+        padding: 0;
+    }
+    
+    .breadcrumb-item + .breadcrumb-item::before {
+        color: var(--secondary-gray);
+    }
+    
+    .breadcrumb-item a {
+        color: var(--primary-blue);
+        text-decoration: none;
+    }
+    
+    .breadcrumb-item.active {
+        color: var(--text-color);
+    }
+</style>
+{% endblock %}
+
+{% endblock %}

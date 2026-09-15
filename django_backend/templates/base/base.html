@@ -12,96 +12,306 @@
     
     <style>
         :root {
-            --primary-black: #1a1a1a;
-            --secondary-black: #2d2d2d;
-            --accent-gray: #404040;
+            /* Light Theme Colors - Enhanced Barber Shop Theme */
+            --bg-color: #fafafa;
+            --text-color: #2d3436;
+            --card-bg: #ffffff;
+            --card-border: #e9ecef;
+            --navbar-bg: #2d3436;
+            --navbar-text: #ffffff;
+            --dropdown-bg: #ffffff;
+            --dropdown-text: #2d3436;
+            
+            /* Primary Brand Colors */
+            --primary-blue: #4a90e2;
+            --primary-blue-hover: #357abd;
+            --success-green: #00b894;
+            --success-green-hover: #00a085;
+            --warning-yellow: #fdcb6e;
+            --warning-yellow-hover: #f39c12;
+            --danger-red: #e17055;
+            --danger-red-hover: #d63031;
+            --info-blue: #74b9ff;
+            --info-blue-hover: #0984e3;
+            
+            /* Neutral Colors */
+            --secondary-gray: #636e72;
             --light-gray: #f8f9fa;
-            --white: #ffffff;
-            --accent-red: #dc3545;
-            --accent-green: #28a745;
-            --accent-blue: #007bff;
+            --medium-gray: #ddd;
+            --dark-gray: #2d3436;
+            --darker-gray: #1e2328;
+            
+            /* Shadow and Border Colors */
+            --shadow-color: rgba(45, 52, 54, 0.08);
+            --shadow-color-hover: rgba(45, 52, 54, 0.15);
+            --shadow-color-strong: rgba(45, 52, 54, 0.2);
+            --border-color: #e9ecef;
+            --input-border: #ddd;
+            
+            /* Accent Colors for Barber Theme */
+            --barber-gold: #f39c12;
+            --barber-gold-hover: #d68910;
+            --barber-brown: #8b4513;
+            --barber-brown-hover: #6b3410;
+        }
+
+        /* Dark Theme Colors */
+        [data-theme="dark"] {
+            --bg-color: #121212;
+            --text-color: #e9ecef;
+            --card-bg: #1e1e1e;
+            --card-border: #333333;
+            --navbar-bg: #000000;
+            --navbar-text: #ffffff;
+            --dropdown-bg: #2d2d2d;
+            --dropdown-text: #e9ecef;
+            --primary-blue: #0d7dd9;
+            --primary-blue-hover: #0a5fb5;
+            --success-green: #20c997;
+            --warning-yellow: #ffc107;
+            --danger-red: #dc3545;
+            --info-blue: #17a2b8;
+            --secondary-gray: #6c757d;
+            --light-gray: #495057;
+            --dark-gray: #2d2d2d;
+            --shadow-color: rgba(255, 255, 255, 0.1);
+            --shadow-color-hover: rgba(255, 255, 255, 0.2);
+            --border-color: #444444;
+            --input-border: #495057;
+        }
+
+        /* Smooth theme transitions */
+        *, *::before, *::after {
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
         }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--white);
-            color: var(--primary-black);
+            background-color: var(--bg-color);
+            color: var(--text-color);
             line-height: 1.6;
         }
 
         /* Navigation */
         .navbar {
-            background-color: var(--primary-black) !important;
-            border-bottom: 2px solid var(--accent-gray);
+            background-color: var(--navbar-bg) !important;
+            border-bottom: 2px solid var(--border-color);
         }
 
         .navbar-brand {
-            color: var(--white) !important;
+            color: var(--navbar-text) !important;
             font-weight: 700;
             font-size: 1.5rem;
         }
 
         .nav-link {
-            color: var(--light-gray) !important;
+            color: var(--navbar-text) !important;
             font-weight: 500;
-            transition: color 0.3s ease;
+            opacity: 0.8;
         }
 
         .nav-link:hover {
-            color: var(--white) !important;
+            color: var(--navbar-text) !important;
+            opacity: 1;
         }
 
-        /* Cards */
+        /* Dropdown menus */
+        .dropdown-menu {
+            background-color: var(--dropdown-bg);
+            border: 1px solid var(--border-color);
+        }
+
+        .dropdown-item {
+            color: var(--dropdown-text);
+        }
+
+        .dropdown-item:hover {
+            background-color: var(--light-gray);
+            color: var(--dropdown-text);
+        }
+
+        .dropdown-header {
+            color: var(--dropdown-text);
+        }
+
+        .dropdown-divider {
+            border-top: 1px solid var(--border-color);
+        }
+
+        /* Cards - Enhanced Design */
         .card {
-            border: 2px solid var(--light-gray);
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            transition: transform 0.3s ease;
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            box-shadow: 0 4px 16px var(--shadow-color);
+            color: var(--text-color);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 32px var(--shadow-color-hover);
+            border-color: var(--primary-blue);
         }
 
         .card-header {
-            background-color: var(--primary-black);
-            color: var(--white);
-            border-bottom: none;
+            background: linear-gradient(135deg, var(--dark-gray) 0%, var(--darker-gray) 100%);
+            color: var(--navbar-text);
+            border-bottom: 1px solid var(--border-color);
             font-weight: 600;
+            padding: 1rem 1.5rem;
+            border-radius: 12px 12px 0 0;
         }
 
-        /* Buttons */
+        .card-body {
+            background-color: var(--card-bg);
+            padding: 1.5rem;
+        }
+        
+        /* Special card variants */
+        .card.border-success {
+            border-color: var(--success-green);
+            box-shadow: 0 4px 16px rgba(0, 184, 148, 0.1);
+        }
+        
+        .card.border-primary {
+            border-color: var(--primary-blue);
+            box-shadow: 0 4px 16px rgba(74, 144, 226, 0.1);
+        }
+        
+        .card.border-warning {
+            border-color: var(--warning-yellow);
+            box-shadow: 0 4px 16px rgba(253, 203, 110, 0.1);
+        }
+        
+        .card.border-info {
+            border-color: var(--info-blue);
+            box-shadow: 0 4px 16px rgba(116, 185, 255, 0.1);
+        }
+
+        /* Buttons - Enhanced Styling */
+        .btn {
+            border-radius: 8px;
+            font-weight: 600;
+            padding: 0.5rem 1.2rem;
+            transition: all 0.3s ease;
+            border-width: 2px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px var(--shadow-color-hover);
+        }
+        
         .btn-primary {
-            background-color: var(--primary-black);
-            border-color: var(--primary-black);
+            background-color: var(--primary-blue);
+            border-color: var(--primary-blue);
+            color: #ffffff;
         }
 
         .btn-primary:hover {
-            background-color: var(--secondary-black);
-            border-color: var(--secondary-black);
+            background-color: var(--primary-blue-hover);
+            border-color: var(--primary-blue-hover);
+            color: #ffffff;
+        }
+
+        .btn-success {
+            background-color: var(--success-green);
+            border-color: var(--success-green);
+            color: #ffffff;
+        }
+        
+        .btn-success:hover {
+            background-color: var(--success-green-hover);
+            border-color: var(--success-green-hover);
+            color: #ffffff;
+        }
+
+        .btn-warning {
+            background-color: var(--warning-yellow);
+            border-color: var(--warning-yellow);
+            color: var(--darker-gray);
+            font-weight: 600;
+        }
+        
+        .btn-warning:hover {
+            background-color: var(--warning-yellow-hover);
+            border-color: var(--warning-yellow-hover);
+            color: #ffffff;
+        }
+
+        .btn-info {
+            background-color: var(--info-blue);
+            border-color: var(--info-blue);
+            color: #ffffff;
+        }
+        
+        .btn-info:hover {
+            background-color: var(--info-blue-hover);
+            border-color: var(--info-blue-hover);
+            color: #ffffff;
+        }
+        
+        .btn-danger {
+            background-color: var(--danger-red);
+            border-color: var(--danger-red);
+            color: #ffffff;
+        }
+        
+        .btn-danger:hover {
+            background-color: var(--danger-red-hover);
+            border-color: var(--danger-red-hover);
+            color: #ffffff;
         }
 
         .btn-outline-dark {
-            color: var(--primary-black);
-            border-color: var(--primary-black);
+            color: var(--text-color);
+            border-color: var(--text-color);
         }
 
         .btn-outline-dark:hover {
-            background-color: var(--primary-black);
-            border-color: var(--primary-black);
+            background-color: var(--text-color);
+            border-color: var(--text-color);
+            color: var(--bg-color);
         }
 
         /* Forms */
         .form-control {
-            border: 2px solid var(--light-gray);
+            background-color: var(--card-bg);
+            border: 2px solid var(--input-border);
             border-radius: 8px;
             padding: 12px 15px;
+            color: var(--text-color);
         }
 
         .form-control:focus {
-            border-color: var(--primary-black);
-            box-shadow: 0 0 0 0.2rem rgba(26, 26, 26, 0.25);
+            background-color: var(--card-bg);
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 0.2rem rgba(13, 125, 217, 0.25);
+            color: var(--text-color);
+        }
+
+        .form-control::placeholder {
+            color: var(--secondary-gray);
+        }
+
+        /* Tables */
+        .table {
+            color: var(--text-color);
+        }
+
+        .table-striped > tbody > tr:nth-of-type(odd) > td,
+        .table-striped > tbody > tr:nth-of-type(odd) > th {
+            background-color: var(--light-gray);
+        }
+
+        .table th {
+            border-color: var(--border-color);
+            color: var(--text-color);
+        }
+
+        .table td {
+            border-color: var(--border-color);
         }
 
         /* Alerts */
@@ -112,23 +322,48 @@
 
         /* Footer */
         .footer {
-            background-color: var(--primary-black);
-            color: var(--white);
+            background-color: var(--navbar-bg);
+            color: var(--navbar-text);
             margin-top: 50px;
         }
 
-        /* Waiting list indicators */
-        .waiting-count {
-            background-color: var(--accent-red);
-            color: var(--white);
-            border-radius: 50%;
-            padding: 5px 10px;
-            font-weight: bold;
-            font-size: 0.9rem;
+        /* Badges */
+        .badge.bg-primary {
+            background-color: var(--primary-blue) !important;
         }
 
-        .waiting-count.available {
-            background-color: var(--accent-green);
+        .badge.bg-success {
+            background-color: var(--success-green) !important;
+        }
+
+        .badge.bg-warning {
+            background-color: var(--warning-yellow) !important;
+            color: #000000 !important;
+        }
+
+        .badge.bg-info {
+            background-color: var(--info-blue) !important;
+        }
+
+        /* Text colors */
+        .text-primary {
+            color: var(--primary-blue) !important;
+        }
+
+        .text-success {
+            color: var(--success-green) !important;
+        }
+
+        .text-warning {
+            color: var(--warning-yellow) !important;
+        }
+
+        .text-info {
+            color: var(--info-blue) !important;
+        }
+
+        .text-muted {
+            color: var(--secondary-gray) !important;
         }
 
         /* Search bar */
@@ -140,7 +375,9 @@
         .search-input {
             border-radius: 25px;
             padding-left: 50px;
-            border: 2px solid var(--accent-gray);
+            border: 2px solid var(--input-border);
+            background-color: var(--card-bg);
+            color: var(--text-color);
         }
 
         .search-icon {
@@ -148,7 +385,39 @@
             left: 15px;
             top: 50%;
             transform: translateY(-50%);
-            color: var(--accent-gray);
+            color: var(--secondary-gray);
+        }
+
+        /* Theme toggle button */
+        .theme-toggle {
+            cursor: pointer;
+        }
+
+        .theme-toggle:hover {
+            background-color: var(--light-gray) !important;
+        }
+
+        /* Dark theme specific adjustments */
+        [data-theme="dark"] .btn-close {
+            filter: invert(1) grayscale(100%) brightness(200%);
+        }
+
+        [data-theme="dark"] .border {
+            border-color: var(--border-color) !important;
+        }
+
+        /* Modal adjustments */
+        [data-theme="dark"] .modal-content {
+            background-color: var(--card-bg);
+            color: var(--text-color);
+        }
+
+        [data-theme="dark"] .modal-header {
+            border-bottom-color: var(--border-color);
+        }
+
+        [data-theme="dark"] .modal-footer {
+            border-top-color: var(--border-color);
         }
     </style>
 
@@ -158,83 +427,87 @@
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
+            <!-- Logo on the left -->
             <a class="navbar-brand" href="{% url 'home' %}">
                 <i class="fas fa-cut me-2"></i>
                 BarberMS
             </a>
             
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    {% if user.is_authenticated %}
-                        {% if user.role == 'customer' %}
-                            <li class="nav-item">
-                                <a class="nav-link" href="{% url 'dashboard' %}">
-                                    <i class="fas fa-tachometer-alt me-1"></i>Dashboard
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{% url 'shop_list' %}">
-                                    <i class="fas fa-store me-1"></i>Find Barbers
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{% url 'my_appointments' %}">
-                                    <i class="fas fa-calendar-check me-1"></i>My Appointments
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{% url 'my_waiting_lists' %}">
-                                    <i class="fas fa-clock me-1"></i>Waiting Lists
-                                </a>
-                            </li>
-                        {% elif user.role == 'shop_owner' %}
-                            <li class="nav-item">
-                                <a class="nav-link" href="{% url 'shop_dashboard' %}">
-                                    <i class="fas fa-tachometer-alt me-1"></i>Shop Dashboard
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{% url 'shop_appointments' %}">
-                                    <i class="fas fa-calendar-check me-1"></i>Appointments
-                                </a>
-                            </li>
-                        {% endif %}
-                    {% endif %}
-                </ul>
-                
-                <ul class="navbar-nav">
-                    {% if user.is_authenticated %}
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-                                <i class="fas fa-user me-1"></i>{{ user.username }}
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{% url 'profile' %}">
-                                    <i class="fas fa-user-edit me-1"></i>Profile
+            <!-- Profile icon on the right -->
+            <div class="navbar-nav ms-auto">
+                {% if user.is_authenticated %}
+                    <div class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user-circle fs-4"></i>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><h6 class="dropdown-header">
+                                <i class="fas fa-user me-2"></i>{{ user.username }}
+                            </h6></li>
+                            <li><hr class="dropdown-divider"></li>
+                            {% if user.role == 'customer' %}
+                                <li><a class="dropdown-item" href="{% url 'dashboard' %}">
+                                    <i class="fas fa-tachometer-alt me-2"></i>Dashboard
                                 </a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="{% url 'logout' %}">
-                                    <i class="fas fa-sign-out-alt me-1"></i>Logout
+                                <li><a class="dropdown-item" href="{% url 'shop_list' %}">
+                                    <i class="fas fa-store me-2"></i>Find Barbers
                                 </a></li>
-                            </ul>
-                        </li>
-                    {% else %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'login' %}">
-                                <i class="fas fa-sign-in-alt me-1"></i>Login
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'register' %}">
-                                <i class="fas fa-user-plus me-1"></i>Register
-                            </a>
-                        </li>
-                    {% endif %}
-                </ul>
+                                <li><a class="dropdown-item" href="{% url 'my_appointments' %}">
+                                    <i class="fas fa-calendar-check me-2"></i>My Appointments
+                                </a></li>
+                                <li><a class="dropdown-item" href="{% url 'my_waiting_lists' %}">
+                                    <i class="fas fa-clock me-2"></i>Waiting Lists
+                                </a></li>
+                                <li><a class="dropdown-item" href="{% url 'haircut_suggestions' %}">
+                                    <i class="fas fa-magic me-2"></i>Haircut AI
+                                </a></li>
+                            {% elif user.role == 'shop_owner' %}
+                                <li><a class="dropdown-item" href="{% url 'shop_dashboard' %}">
+                                    <i class="fas fa-tachometer-alt me-2"></i>Shop Dashboard
+                                </a></li>
+                                <li><a class="dropdown-item" href="{% url 'shop_appointments' %}">
+                                    <i class="fas fa-calendar-check me-2"></i>Appointments
+                                </a></li>
+                                <li><a class="dropdown-item" href="{% url 'manage_services' %}">
+                                    <i class="fas fa-cogs me-2"></i>Manage Services
+                                </a></li>
+                                <li><a class="dropdown-item" href="{% url 'manage_portfolio' %}">
+                                    <i class="fas fa-images me-2"></i>Portfolio
+                                </a></li>
+                            {% endif %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item theme-toggle" href="#" onclick="toggleTheme()">
+                                <i class="fas fa-moon me-2" id="theme-icon"></i>
+                                <span id="theme-text">Dark Theme</span>
+                            </a></li>
+                            <li><a class="dropdown-item" href="{% url 'profile' %}">
+                                <i class="fas fa-user-edit me-2"></i>Profile
+                            </a></li>
+                            <li><a class="dropdown-item" href="{% url 'logout' %}">
+                                <i class="fas fa-sign-out-alt me-2"></i>Logout
+                            </a></li>
+                        </ul>
+                    </div>
+                {% else %}
+                    <div class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="guestDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user-circle fs-4"></i>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item theme-toggle" href="#" onclick="toggleTheme()">
+                                <i class="fas fa-moon me-2" id="theme-icon-guest"></i>
+                                <span id="theme-text-guest">Dark Theme</span>
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{% url 'login' %}">
+                                <i class="fas fa-sign-in-alt me-2"></i>Login
+                            </a></li>
+                            <li><a class="dropdown-item" href="{% url 'register' %}">
+                                <i class="fas fa-user-plus me-2"></i>Register
+                            </a></li>
+                        </ul>
+                    </div>
+                {% endif %}
             </div>
         </div>
     </nav>
@@ -258,7 +531,6 @@
     <!-- Footer -->
     <footer class="footer py-4">
         <div class="container text-center">
-            <p>&copy; 2024 Barber Management System. Built with Django & Flask.</p>
         </div>
     </footer>
 
@@ -266,6 +538,86 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Socket.IO for real-time updates -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
+    
+    <!-- Theme Toggle Script -->
+    <script>
+        // Theme toggle functionality
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            // Set the new theme
+            document.documentElement.setAttribute('data-theme', newTheme);
+            
+            // Update theme toggle button icons and text
+            updateThemeToggleUI(newTheme);
+            
+            // Save theme preference to localStorage
+            localStorage.setItem('barber-ms-theme', newTheme);
+        }
+        
+        function updateThemeToggleUI(theme) {
+            // Update authenticated user theme toggle
+            const themeIcon = document.getElementById('theme-icon');
+            const themeText = document.getElementById('theme-text');
+            
+            // Update guest user theme toggle
+            const themeIconGuest = document.getElementById('theme-icon-guest');
+            const themeTextGuest = document.getElementById('theme-text-guest');
+            
+            if (theme === 'dark') {
+                // Dark theme active - show light theme option
+                if (themeIcon) {
+                    themeIcon.className = 'fas fa-sun me-2';
+                }
+                if (themeText) {
+                    themeText.textContent = 'Light Theme';
+                }
+                if (themeIconGuest) {
+                    themeIconGuest.className = 'fas fa-sun me-2';
+                }
+                if (themeTextGuest) {
+                    themeTextGuest.textContent = 'Light Theme';
+                }
+            } else {
+                // Light theme active - show dark theme option
+                if (themeIcon) {
+                    themeIcon.className = 'fas fa-moon me-2';
+                }
+                if (themeText) {
+                    themeText.textContent = 'Dark Theme';
+                }
+                if (themeIconGuest) {
+                    themeIconGuest.className = 'fas fa-moon me-2';
+                }
+                if (themeTextGuest) {
+                    themeTextGuest.textContent = 'Dark Theme';
+                }
+            }
+        }
+        
+        // Initialize theme on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check for saved theme preference or default to 'light'
+            const savedTheme = localStorage.getItem('barber-ms-theme') || 'light';
+            
+            // Apply the theme
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            
+            // Update UI
+            updateThemeToggleUI(savedTheme);
+        });
+        
+        // Detect system theme preference change
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
+            // Only auto-switch if no manual preference is saved
+            if (!localStorage.getItem('barber-ms-theme')) {
+                const systemTheme = e.matches ? 'dark' : 'light';
+                document.documentElement.setAttribute('data-theme', systemTheme);
+                updateThemeToggleUI(systemTheme);
+            }
+        });
+    </script>
     
     {% block extra_js %}{% endblock %}
 </body>

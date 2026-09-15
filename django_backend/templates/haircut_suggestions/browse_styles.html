@@ -1,0 +1,249 @@
+{% extends 'base/base.html' %}
+{% load static haircut_extras %}
+
+{% block title %}{{ category.display_name }} Styles - Browse Styles{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-cut me-2"></i>{{ category.display_name }}</h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'browse_styles' %}">Browse Styles</a></li>
+                    <li class="breadcrumb-item active">{{ category.display_name }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <p class="text-muted mb-0">
+                            <i class="fas fa-info-circle me-2"></i>
+                            {{ category.description }}
+                        </p>
+                    </div>
+                    <div class="text-muted">
+                        <small>{{ styles|length }} style{{ styles|length|pluralize }} available</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    {% for style in styles %}
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100 style-card">
+            <div class="position-relative">
+                {% if style.example_image %}
+                    <img src="{{ style.example_image.url }}" class="card-img-top style-image clickable-image" alt="{{ style.name }}" 
+                         data-bs-toggle="modal" data-bs-target="#imageModal" 
+                         data-image="{{ style.example_image.url }}" data-title="{{ style.name }}">
+                {% else %}
+                    {% style_static_image style as fallback_url %}
+                    {% if fallback_url %}
+                        <img src="{{ fallback_url }}" class="card-img-top style-image clickable-image" alt="{{ style.name }}"
+                             data-bs-toggle="modal" data-bs-target="#imageModal" 
+                             data-image="{{ fallback_url }}" data-title="{{ style.name }}">
+                    {% else %}
+                        <div class="card-img-top style-placeholder d-flex align-items-center justify-content-center">
+                            <i class="fas fa-image fa-3x text-muted"></i>
+                        </div>
+                    {% endif %}
+                {% endif %}
+                
+                <!-- Difficulty Badge -->
+                <div class="position-absolute top-0 start-0 m-2">
+                    <span class="badge {% if style.difficulty_level == 'easy' %}bg-success{% elif style.difficulty_level == 'medium' %}bg-warning{% else %}bg-danger{% endif %}">
+                        {{ style.get_difficulty_level_display }}
+                    </span>
+                </div>
+                
+                <!-- Maintenance Badge -->
+                <div class="position-absolute top-0 end-0 m-2">
+                    <span class="badge {% if style.maintenance_level == 'low' %}bg-info{% elif style.maintenance_level == 'medium' %}bg-secondary{% else %}bg-dark{% endif %}">
+                        {{ style.get_maintenance_level_display }} Maintenance
+                    </span>
+                </div>
+            </div>
+            
+            <div class="card-body">
+                <h5 class="card-title">{{ style.name }}</h5>
+                <p class="card-text text-muted small">{{ style.description|truncatechars:80 }}</p>
+                
+                {% if style.tags %}
+                <div class="mb-2">
+                    {% for tag in style.get_tags_list %}
+                        <span class="badge bg-light text-dark me-1">{{ tag }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <!-- Suitable Face Shapes -->
+                {% if style.suitable_face_shapes.all %}
+                <div class="mb-3">
+                    <small class="text-muted d-block mb-1">
+                        <i class="fas fa-user me-1"></i>Best for:
+                    </small>
+                    <div class="face-shapes">
+                        {% for shape in style.suitable_face_shapes.all %}
+                            <span class="badge bg-outline-primary me-1">{{ shape.get_name_display }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="card-footer bg-transparent border-0">
+                <div class="d-flex justify-content-between align-items-center">
+                    <a href="{% url 'style_detail' style.id %}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-eye me-1"></i>View Details
+                    </a>
+                    <a href="{% url 'shop_list' %}?service_category={{ category.id }}" class="btn btn-outline-success btn-sm">
+                        <i class="fas fa-search me-1"></i>Find Shops
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-cut fa-3x text-muted mb-3"></i>
+                <h4>No styles available</h4>
+                <p class="text-muted">Styles for {{ category.display_name }} will appear here once they're added.</p>
+                <a href="{% url 'browse_styles' %}" class="btn btn-primary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Categories
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% if styles %}
+<div class="row mt-4">
+    <div class="col-12 text-center">
+        <a href="{% url 'browse_styles' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to All Categories
+        </a>
+    </div>
+</div>
+{% endif %}
+
+<!-- Image Modal -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="imageModalLabel">Style Preview</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body text-center p-0">
+        <img id="modalImage" src="" alt="" class="img-fluid rounded" style="max-height: 80vh;">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .style-card {
+        transition: all 0.3s ease;
+        border: 1px solid var(--border-color);
+        background-color: var(--card-bg);
+    }
+    
+    .style-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px var(--shadow-color-hover);
+    }
+    
+    .style-image {
+        height: 250px;
+        object-fit: contain;
+        width: 100%;
+        background-color: #f8f9fa;
+        cursor: pointer;
+        transition: transform 0.2s ease;
+    }
+    
+    .clickable-image:hover {
+        transform: scale(1.02);
+        opacity: 0.9;
+    }
+    
+    .style-placeholder {
+        height: 250px;
+        background-color: var(--light-gray);
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .face-shapes .badge {
+        font-size: 0.7rem;
+        background-color: var(--light-gray) !important;
+        color: var(--text-color) !important;
+        border: 1px solid var(--border-color);
+    }
+    
+    .badge.bg-outline-primary {
+        background-color: transparent !important;
+        color: var(--primary-blue) !important;
+        border: 1px solid var(--primary-blue) !important;
+    }
+    
+    .breadcrumb {
+        background: none;
+        padding: 0;
+    }
+    
+    .breadcrumb-item + .breadcrumb-item::before {
+        color: var(--secondary-gray);
+    }
+    
+    .breadcrumb-item a {
+        color: var(--primary-blue);
+        text-decoration: none;
+    }
+    
+    .breadcrumb-item.active {
+        color: var(--text-color);
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle image modal
+    const imageModal = document.getElementById('imageModal');
+    const modalImage = document.getElementById('modalImage');
+    const modalTitle = document.getElementById('imageModalLabel');
+    
+    imageModal.addEventListener('show.bs.modal', function (event) {
+        const button = event.relatedTarget;
+        const imageSrc = button.getAttribute('data-image');
+        const imageTitle = button.getAttribute('data-title');
+        
+        modalImage.src = imageSrc;
+        modalImage.alt = imageTitle;
+        modalTitle.textContent = imageTitle + ' - Full Preview';
+    });
+});
+</script>
+{% endblock %}

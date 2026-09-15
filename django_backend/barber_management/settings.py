@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'shops',
     'appointments',
     'waiting_lists',
+    'haircut_suggestions',
 ]
 
 MIDDLEWARE = [
@@ -69,6 +70,8 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
+            # Ensure custom template tags are always available without needing `{% load %}`
+            'builtins': ['haircut_suggestions.templatetags.haircut_extras'],
         },
     },
 ]

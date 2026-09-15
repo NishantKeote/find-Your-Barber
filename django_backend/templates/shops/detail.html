@@ -135,7 +135,161 @@
     </div>
 </div>
 
-<!-- Additional Info -->
+<!-- Reviews and Ratings Section -->
+<div class="row mt-4">
+    <!-- Reviews Display -->
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-star text-warning me-2"></i>Reviews & Ratings
+                    <span class="badge bg-secondary ms-2">{{ total_reviews }}</span>
+                </h5>
+                {% if average_rating > 0 %}
+                    <div class="d-flex align-items-center">
+                        <span class="h4 mb-0 me-2 text-warning">{{ average_rating }}</span>
+                        <div class="rating-stars">
+                            {% for i in "12345" %}
+                                {% if average_rating >= i|add:0 %}
+                                    <i class="fas fa-star text-warning"></i>
+                                {% elif average_rating >= i|add:"-0.5" %}
+                                    <i class="fas fa-star-half-alt text-warning"></i>
+                                {% else %}
+                                    <i class="far fa-star text-muted"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                {% if reviews %}
+                    <div class="reviews-list">
+                        {% for review in reviews %}
+                            <div class="review-item border-bottom pb-3 mb-3">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div class="d-flex align-items-center">
+                                        <div class="review-avatar me-3">
+                                            <i class="fas fa-user-circle fa-2x text-muted"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0">{{ review.customer.first_name|default:review.customer.username }}</h6>
+                                            <small class="text-muted">{{ review.created_at|date:"M d, Y" }}</small>
+                                        </div>
+                                    </div>
+                                    <div class="rating-stars">
+                                        {% for i in "12345" %}
+                                            {% if review.rating >= i|add:0 %}
+                                                <i class="fas fa-star text-warning"></i>
+                                            {% else %}
+                                                <i class="far fa-star text-muted"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                {% if review.review_text %}
+                                    <p class="mb-0 ms-5">{{ review.review_text }}</p>
+                                {% else %}
+                                    <p class="mb-0 ms-5 text-muted fst-italic">No written review provided.</p>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                    
+                    {% if total_reviews > 10 %}
+                        <div class="text-center mt-4">
+                            <button class="btn btn-outline-primary" id="load-more-reviews">
+                                <i class="fas fa-chevron-down me-2"></i>Load More Reviews
+                            </button>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-comment-slash fa-3x text-muted mb-3"></i>
+                        <h6>No reviews yet</h6>
+                        <p class="text-muted">Be the first to review this shop!</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Review Submission Form -->
+    <div class="col-lg-4">
+        {% if user.is_authenticated and user.role == 'customer' %}
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-edit me-2"></i>Write a Review
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Check if user has completed appointment -->
+                    {% if user_can_review %}
+                        <form id="review-form" action="{% url 'submit_review' shop.id %}" method="post">
+                            {% csrf_token %}
+                            
+                            <!-- Star Rating -->
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Your Rating *</label>
+                                <div class="star-rating mb-2" id="star-rating">
+                                    {% for i in "12345" %}
+                                        <i class="far fa-star rating-star" data-rating="{{ i }}"></i>
+                                    {% endfor %}
+                                </div>
+                                <input type="hidden" name="rating" id="rating-input" required>
+                                <div class="form-text">Click on the stars to rate this shop</div>
+                            </div>
+                            
+                            <!-- Review Text -->
+                            <div class="mb-3">
+                                <label for="review_text" class="form-label">Your Review</label>
+                                <textarea class="form-control" name="review_text" id="review_text" rows="4" 
+                                          placeholder="Tell others about your experience at this shop... (optional)"></textarea>
+                            </div>
+                            
+                            <!-- Submit Button -->
+                            <button type="submit" class="btn btn-warning w-100" id="submit-review-btn" disabled>
+                                <i class="fas fa-star me-2"></i>Submit Review
+                            </button>
+                        </form>
+                        
+                        <!-- Existing Review Notice -->
+                        {% if user_existing_review %}
+                            <div class="alert alert-info mt-3">
+                                <i class="fas fa-info-circle me-2"></i>
+                                You've already reviewed this shop. Submitting a new review will update your existing one.
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            You can only review shops where you've completed at least one appointment.
+                        </div>
+                        {% if not user_has_appointment %}
+                            <a href="{% url 'book_appointment' shop.id %}" class="btn btn-primary w-100 mt-2">
+                                <i class="fas fa-calendar-check me-2"></i>Book an Appointment
+                            </a>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        {% else %}
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-sign-in-alt fa-3x text-muted mb-3"></i>
+                    <h6>Login to Review</h6>
+                    <p class="text-muted mb-3">You need to be logged in as a customer to write reviews.</p>
+                    <a href="{% url 'login' %}" class="btn btn-primary">
+                        <i class="fas fa-sign-in-alt me-2"></i>Login
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- How It Works Section -->
 <div class="row mt-4">
     <div class="col-12">
         <div class="card">
@@ -173,6 +327,130 @@
 
 {% block extra_js %}
 <script>
+// Star rating functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const ratingStars = document.querySelectorAll('.rating-star');
+    const ratingInput = document.getElementById('rating-input');
+    const submitBtn = document.getElementById('submit-review-btn');
+    let selectedRating = 0;
+    
+    // Handle star rating clicks
+    ratingStars.forEach(star => {
+        star.addEventListener('click', function() {
+            selectedRating = parseInt(this.dataset.rating);
+            updateStarDisplay(selectedRating);
+            ratingInput.value = selectedRating;
+            
+            // Enable submit button when rating is selected
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('btn-secondary');
+                submitBtn.classList.add('btn-warning');
+            }
+        });
+        
+        // Hover effects
+        star.addEventListener('mouseenter', function() {
+            const hoverRating = parseInt(this.dataset.rating);
+            updateStarDisplay(hoverRating, true);
+        });
+    });
+    
+    // Reset hover effect when mouse leaves star area
+    const starRatingContainer = document.getElementById('star-rating');
+    if (starRatingContainer) {
+        starRatingContainer.addEventListener('mouseleave', function() {
+            updateStarDisplay(selectedRating);
+        });
+    }
+    
+    function updateStarDisplay(rating, isHover = false) {
+        ratingStars.forEach((star, index) => {
+            const starRating = index + 1;
+            star.classList.remove('fas', 'far', 'text-warning', 'text-muted');
+            
+            if (starRating <= rating) {
+                star.classList.add('fas', 'text-warning');
+                if (isHover) {
+                    star.style.transform = 'scale(1.1)';
+                }
+            } else {
+                star.classList.add('far', 'text-muted');
+                if (isHover) {
+                    star.style.transform = 'scale(1)';
+                }
+            }
+            
+            if (!isHover) {
+                star.style.transform = 'scale(1)';
+            }
+        });
+    }
+    
+    // Handle review form submission
+    const reviewForm = document.getElementById('review-form');
+    if (reviewForm) {
+        reviewForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const submitButton = document.getElementById('submit-review-btn');
+            const originalText = submitButton.innerHTML;
+            
+            // Show loading state
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Submitting...';
+            
+            fetch(this.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show success message
+                    showAlert('success', 'Review submitted successfully! The page will refresh shortly.');
+                    
+                    // Refresh page after 2 seconds to show updated reviews
+                    setTimeout(() => {
+                        location.reload();
+                    }, 2000);
+                } else {
+                    showAlert('danger', data.error || 'Failed to submit review. Please try again.');
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = originalText;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert('danger', 'An error occurred. Please try again.');
+                submitButton.disabled = false;
+                submitButton.innerHTML = originalText;
+            });
+        });
+    }
+    
+    function showAlert(type, message) {
+        // Create alert element
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show mt-3`;
+        alertDiv.innerHTML = `
+            <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        // Insert after the review form
+        const reviewForm = document.getElementById('review-form');
+        if (reviewForm) {
+            reviewForm.parentNode.insertBefore(alertDiv, reviewForm.nextSibling);
+        }
+    }
+});
+
 // Auto-refresh waiting count every 30 seconds
 setInterval(function() {
     // In a real implementation, you would make an AJAX call to update the waiting count
@@ -180,6 +458,60 @@ setInterval(function() {
     console.log('Refreshing waiting list status...');
 }, 30000);
 </script>
+
+<style>
+/* Star rating styles */
+.rating-star {
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-right: 0.2rem;
+}
+
+.rating-star:hover {
+    transform: scale(1.1);
+}
+
+.rating-stars {
+    display: flex;
+    align-items: center;
+}
+
+.rating-stars i {
+    font-size: 1rem;
+    margin-right: 0.1rem;
+}
+
+/* Review items */
+.review-item:last-child {
+    border-bottom: none !important;
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+.review-avatar {
+    flex-shrink: 0;
+}
+
+/* Star rating container */
+.star-rating {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+/* Review form improvements */
+#review-form .form-control:focus {
+    border-color: #ffc107;
+    box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25);
+}
+
+/* Alert styling */
+.alert {
+    border-radius: 8px;
+    border: none;
+}
+</style>
 {% endblock %}
 
 {% endblock %}

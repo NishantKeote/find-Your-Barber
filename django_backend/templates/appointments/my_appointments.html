@@ -42,12 +42,7 @@
                                 <td>{{ appointment.appointment_time|time:"g:i A" }}</td>
                                 <td>{{ appointment.service_description|default:"-" }}</td>
                                 <td>
-                                    <span class="badge 
-                                        {% if appointment.status == 'scheduled' %}bg-primary{% endif %}
-                                        {% if appointment.status == 'in_progress' %}bg-warning{% endif %}
-                                        {% if appointment.status == 'completed' %}bg-success{% endif %}
-                                        {% if appointment.status == 'cancelled' %}bg-danger{% endif %}
-                                    ">
+                                    <span class="badge{% if appointment.status == 'scheduled' %} bg-primary{% elif appointment.status == 'in_progress' %} bg-warning{% elif appointment.status == 'completed' %} bg-success{% elif appointment.status == 'cancelled' %} bg-danger{% endif %}">
                                         {{ appointment.get_status_display }}
                                     </span>
                                 </td>

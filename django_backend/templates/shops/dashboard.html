@@ -19,56 +19,143 @@
     </div>
 </div>
 
-<!-- Quick Stats -->
-<div class="row mb-4">
-    <div class="col-md-3">
-        <div class="card text-center bg-primary text-white">
-            <div class="card-body">
-                <h5 class="card-title">
-                    <i class="fas fa-users me-2"></i>
+<!-- Shop Statistics Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-3 col-md-6 col-sm-6">
+        <div class="card text-center h-100 dashboard-card border-primary shadow-sm" data-aos="fade-up" data-aos-delay="100">
+            <div class="card-body d-flex flex-column p-4">
+                <div class="card-icon mb-3">
+                    <i class="fas fa-users fa-3x text-primary"></i>
+                </div>
+                <h5 class="card-title fw-bold mb-3 text-primary">
                     Current Waiting
                 </h5>
-                <p class="card-text display-4 fw-bold" id="currentWaitingCount">{{ shop.current_waiting_count }}</p>
-                <small>of {{ shop.max_waiting_list_size }} max</small>
+                <div class="flex-grow-1 d-flex align-items-center justify-content-center mb-4">
+                    <span class="display-3 fw-bold text-primary" id="currentWaitingCount">{{ shop.current_waiting_count }}</span>
+                </div>
+                <div class="mt-auto">
+                    <small class="text-muted">of {{ shop.max_waiting_list_size }} max capacity</small>
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card text-center bg-success text-white">
-            <div class="card-body">
-                <h5 class="card-title">
-                    <i class="fas fa-calendar-check me-2"></i>
+    
+    <div class="col-lg-3 col-md-6 col-sm-6">
+        <div class="card text-center h-100 dashboard-card border-success shadow-sm" data-aos="fade-up" data-aos-delay="200">
+            <div class="card-body d-flex flex-column p-4">
+                <div class="card-icon mb-3">
+                    <i class="fas fa-calendar-check fa-3x text-success"></i>
+                </div>
+                <h5 class="card-title fw-bold mb-3 text-success">
                     Today's Appointments
                 </h5>
-                <p class="card-text display-4 fw-bold">{{ recent_appointments.count }}</p>
+                <div class="flex-grow-1 d-flex align-items-center justify-content-center mb-4">
+                    <span class="display-3 fw-bold text-success">{{ recent_appointments.count }}</span>
+                </div>
+                <div class="mt-auto">
+                    <a href="{% url 'shop_appointments' %}" class="btn btn-success w-100 py-2">
+                        <i class="fas fa-list me-2"></i>View All
+                    </a>
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card text-center bg-info text-white">
-            <div class="card-body">
-                <h5 class="card-title">
-                    <i class="fas fa-clock me-2"></i>
-                    Hours Today
+    
+    <div class="col-lg-3 col-md-6 col-sm-6">
+        <div class="card text-center h-100 dashboard-card border-info shadow-sm" data-aos="fade-up" data-aos-delay="300">
+            <div class="card-body d-flex flex-column p-4">
+                <div class="card-icon mb-3">
+                    <i class="fas fa-clock fa-3x text-info"></i>
+                </div>
+                <h5 class="card-title fw-bold mb-3 text-info">
+                    Shop Hours
                 </h5>
-                <p class="card-text">
-                    <strong>{{ shop.opening_time|time:"g:i A" }}</strong><br>
-                    <small>to</small><br>
-                    <strong>{{ shop.closing_time|time:"g:i A" }}</strong>
-                </p>
+                <div class="flex-grow-1 d-flex flex-column align-items-center justify-content-center mb-4">
+                    <div class="text-center">
+                        <div class="h4 mb-1">{{ shop.opening_time|time:"g:i A" }}</div>
+                        <small class="text-muted">to</small>
+                        <div class="h4 mt-1">{{ shop.closing_time|time:"g:i A" }}</div>
+                    </div>
+                </div>
+                <div class="mt-auto">
+                    <small class="text-muted">Today's operating hours</small>
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card text-center bg-warning text-white">
-            <div class="card-body">
-                <h5 class="card-title">
-                    <i class="fas fa-phone me-2"></i>
-                    Contact
+    
+    <div class="col-lg-3 col-md-6 col-sm-6">
+        <div class="card text-center h-100 dashboard-card border-warning shadow-sm" data-aos="fade-up" data-aos-delay="400">
+            <div class="card-body d-flex flex-column p-4">
+                <div class="card-icon mb-3">
+                    <i class="fas fa-star fa-3x text-warning"></i>
+                </div>
+                <h5 class="card-title fw-bold mb-3 text-warning">
+                    Shop Rating
                 </h5>
-                <p class="card-text">
-                    <strong>{{ shop.phone_number }}</strong>
-                </p>
+                <div class="flex-grow-1 d-flex align-items-center justify-content-center mb-4">
+                    {% if shop.get_average_rating > 0 %}
+                        <div class="text-center">
+                            <div class="display-4 fw-bold text-warning">{{ shop.get_average_rating }}</div>
+                            <div class="rating-stars mt-2">
+                                {% for i in "12345" %}
+                                    {% if shop.get_average_rating >= i|add:0 %}
+                                        <i class="fas fa-star text-warning"></i>
+                                    {% else %}
+                                        <i class="far fa-star text-muted"></i>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="text-center">
+                            <div class="display-4 fw-bold text-muted">-</div>
+                            <small class="text-muted">No ratings yet</small>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="mt-auto">
+                    <small class="text-muted">{{ shop.reviews.count }} review{{ shop.reviews.count|pluralize }}</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions Section -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card" data-aos="fade-up" data-aos-delay="500">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Management</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <a href="{% url 'manage_services' %}" class="btn btn-outline-primary btn-lg w-100">
+                            <i class="fas fa-cogs fa-2x d-block mb-2"></i>
+                            <small>Manage<br>Services</small>
+                        </a>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <a href="{% url 'manage_portfolio' %}" class="btn btn-outline-success btn-lg w-100">
+                            <i class="fas fa-images fa-2x d-block mb-2"></i>
+                            <small>Portfolio<br>Management</small>
+                        </a>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <a href="{% url 'shop_appointments' %}" class="btn btn-outline-info btn-lg w-100">
+                            <i class="fas fa-calendar-alt fa-2x d-block mb-2"></i>
+                            <small>View All<br>Appointments</small>
+                        </a>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <div class="btn btn-outline-warning btn-lg w-100" style="cursor: default;">
+                            <i class="fas fa-phone fa-2x d-block mb-2"></i>
+                            <small>{{ shop.phone_number }}<br>Contact Info</small>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -122,11 +209,7 @@
                                     {% endif %}
                                 </td>
                                 <td>
-                                    <span class="badge 
-                                        {% if entry.status == 'waiting' %}bg-warning{% endif %}
-                                        {% if entry.status == 'called' %}bg-primary{% endif %}
-                                        {% if entry.status == 'served' %}bg-success{% endif %}
-                                    ">
+                                    <span class="badge{% if entry.status == 'waiting' %} bg-warning{% elif entry.status == 'called' %} bg-primary{% elif entry.status == 'served' %} bg-success{% endif %}">
                                         {{ entry.get_status_display }}
                                     </span>
                                 </td>
@@ -190,12 +273,7 @@
                                 <td>{{ appointment.appointment_date|date:"M d, Y" }}</td>
                                 <td>{{ appointment.appointment_time|time:"g:i A" }}</td>
                                 <td>
-                                    <span class="badge 
-                                        {% if appointment.status == 'scheduled' %}bg-primary{% endif %}
-                                        {% if appointment.status == 'in_progress' %}bg-warning{% endif %}
-                                        {% if appointment.status == 'completed' %}bg-success{% endif %}
-                                        {% if appointment.status == 'cancelled' %}bg-danger{% endif %}
-                                    ">
+                                    <span class="badge{% if appointment.status == 'scheduled' %} bg-primary{% elif appointment.status == 'in_progress' %} bg-warning{% elif appointment.status == 'completed' %} bg-success{% elif appointment.status == 'cancelled' %} bg-danger{% endif %}">
                                         {{ appointment.get_status_display }}
                                     </span>
                                 </td>
@@ -273,6 +351,86 @@
         </div>
     </div>
 </div>
+
+{% block extra_css %}
+<style>
+    /* Dashboard Cards Styling */
+    .dashboard-card {
+        transition: all 0.3s ease;
+        border-width: 2px;
+        min-height: 280px;
+    }
+    
+    .dashboard-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+    }
+    
+    .dashboard-card .card-body {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    
+    .dashboard-card .card-icon {
+        margin-bottom: 1rem;
+    }
+    
+    .dashboard-card .card-title {
+        font-size: 1.1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .dashboard-card .btn {
+        font-weight: 600;
+        border-width: 2px;
+        transition: all 0.3s ease;
+    }
+    
+    .dashboard-card .btn:hover {
+        transform: translateY(-1px);
+    }
+    
+    /* Rating stars styling */
+    .rating-stars i {
+        font-size: 1rem;
+        margin: 0 1px;
+    }
+    
+    /* Responsive card adjustments */
+    @media (max-width: 768px) {
+        .dashboard-card {
+            min-height: 240px;
+            margin-bottom: 1rem;
+        }
+        
+        .dashboard-card .card-icon i {
+            font-size: 2.5rem !important;
+        }
+        
+        .dashboard-card .display-3 {
+            font-size: 2.5rem !important;
+        }
+    }
+    
+    /* Color theme consistency */
+    .border-success {
+        border-color: var(--success-green) !important;
+    }
+    
+    .border-primary {
+        border-color: var(--primary-blue) !important;
+    }
+    
+    .border-warning {
+        border-color: var(--warning-yellow) !important;
+    }
+    
+    .border-info {
+        border-color: var(--info-blue) !important;
+    }
+</style>
+{% endblock %}
 
 {% block extra_js %}
 <script>

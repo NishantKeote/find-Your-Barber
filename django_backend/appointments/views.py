@@ -5,8 +5,9 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.utils import timezone
 from .models import Appointment
-from shops.models import Shop
+from shops.models import Shop, ShopService
 from datetime import datetime, date, timedelta
+import json
 
 @login_required
 def book_appointment(request, shop_id):
@@ -20,7 +21,9 @@ def book_appointment(request, shop_id):
     if request.method == 'POST':
         appointment_date = request.POST.get('appointment_date')
         appointment_time = request.POST.get('appointment_time')
-        service_description = request.POST.get('service_description', '')
+        selected_services = request.POST.getlist('services')  # Multiple services
+        special_request = request.POST.get('special_request', '')
+        service_description = request.POST.get('service_description', '')  # Legacy field
         notes = request.POST.get('notes', '')
         
         try:
@@ -47,15 +50,44 @@ def book_appointment(request, shop_id):
                 messages.error(request, 'This time slot is already booked')
                 return render(request, 'appointments/book.html', {'shop': shop})
             
+            # Validate selected services
+            if not selected_services:
+                messages.error(request, 'Please select at least one service')
+                return render(request, 'appointments/book.html', {
+                    'shop': shop,
+                    'services': shop.services.filter(is_available=True)
+                })
+            
+            # Verify services belong to this shop
+            services = ShopService.objects.filter(
+                id__in=selected_services,
+                shop=shop,
+                is_available=True
+            )
+            
+            if len(services) != len(selected_services):
+                messages.error(request, 'Invalid service selection')
+                return render(request, 'appointments/book.html', {
+                    'shop': shop,
+                    'services': shop.services.filter(is_available=True)
+                })
+            
             # Create appointment
             appointment = Appointment.objects.create(
                 customer=request.user,
                 shop=shop,
                 appointment_date=appointment_date,
                 appointment_time=appointment_time,
+                special_request=special_request,
                 service_description=service_description,
                 notes=notes
             )
+            
+            # Add selected services to appointment
+            appointment.services.set(services)
+            
+            # Calculate totals
+            appointment.calculate_totals()
             
             messages.success(request, f'Appointment booked successfully for {appointment_date} at {appointment_time}')
             return redirect('my_appointments')
@@ -63,7 +95,13 @@ def book_appointment(request, shop_id):
         except ValueError:
             messages.error(request, 'Invalid date or time format')
     
-    return render(request, 'appointments/book.html', {'shop': shop})
+    # Get available services for this shop
+    services = shop.services.filter(is_available=True).select_related('predefined_service__category')
+    
+    return render(request, 'appointments/book.html', {
+        'shop': shop,
+        'services': services
+    })
 
 @login_required
 def my_appointments(request):

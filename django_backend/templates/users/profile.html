@@ -9,7 +9,7 @@
             <div class="card-header">
                 <h4 class="mb-0">
                     <i class="fas fa-user-edit me-2"></i>
-                    My Profile
+                    Profile & Preferences
                 </h4>
             </div>
             <div class="card-body p-4">
@@ -119,6 +119,99 @@
                         </div>
                     </div>
                     
+                    <!-- Preferences Section -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-secondary text-white">
+                            <h6 class="mb-0"><i class="fas fa-cog me-2"></i>Preferences</h6>
+                        </div>
+                        <div class="card-body">
+                            {% if user.role == 'customer' %}
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Preferred Services</label>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="pref_haircut" name="pref_haircut">
+                                        <label class="form-check-label" for="pref_haircut">Haircuts</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="pref_beard" name="pref_beard">
+                                        <label class="form-check-label" for="pref_beard">Beard Services</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="pref_spa" name="pref_spa">
+                                        <label class="form-check-label" for="pref_spa">Spa & Salon Services</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="max_distance" class="form-label">Max Distance (km)</label>
+                                    <select class="form-control" id="max_distance" name="max_distance">
+                                        <option value="5">5 km</option>
+                                        <option value="10" selected>10 km</option>
+                                        <option value="20">20 km</option>
+                                        <option value="50">50 km</option>
+                                        <option value="100">100 km</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="email_notifications" name="email_notifications" checked>
+                                        <label class="form-check-label" for="email_notifications">
+                                            Email Notifications
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="sms_notifications" name="sms_notifications">
+                                        <label class="form-check-label" for="sms_notifications">
+                                            SMS Notifications
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            {% elif user.role == 'shop_owner' %}
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="booking_notifications" name="booking_notifications" checked>
+                                        <label class="form-check-label" for="booking_notifications">
+                                            New Booking Notifications
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="review_notifications" name="review_notifications" checked>
+                                        <label class="form-check-label" for="review_notifications">
+                                            Review Notifications
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="auto_accept_bookings" class="form-label">Auto Accept Bookings</label>
+                                    <select class="form-control" id="auto_accept_bookings" name="auto_accept_bookings">
+                                        <option value="yes">Yes - Accept automatically</option>
+                                        <option value="no" selected>No - Manual approval</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="default_appointment_duration" class="form-label">Default Appointment Duration</label>
+                                    <select class="form-control" id="default_appointment_duration" name="default_appointment_duration">
+                                        <option value="30">30 minutes</option>
+                                        <option value="45" selected>45 minutes</option>
+                                        <option value="60">1 hour</option>
+                                        <option value="90">1.5 hours</option>
+                                    </select>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
                     <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                         <a href="{% if user.role == 'shop_owner' %}{% url 'shop_dashboard' %}{% else %}{% url 'dashboard' %}{% endif %}" 
                            class="btn btn-outline-secondary me-md-2">
@@ -203,6 +296,106 @@
                     {% endif %}
                 </div>
                 {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Danger Zone - Delete Account -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Danger Zone</h5>
+            </div>
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h6 class="text-danger mb-1">Delete Account</h6>
+                        <p class="text-muted mb-0">
+                            Permanently delete your account and all associated data. 
+                            <strong>This action cannot be undone!</strong>
+                        </p>
+                        <small class="text-muted">
+                            This will delete:
+                            {% if user.role == 'customer' %}
+                            • All your appointments and booking history
+                            • Waiting list entries
+                            • Reviews and ratings
+                            • Uploaded photos for haircut suggestions
+                            {% else %}
+                            • Your barber shop and all its data
+                            • All customer appointments
+                            • Portfolio images
+                            • Services and pricing information
+                            • Customer reviews
+                            {% endif %}
+                        </small>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
+                            <i class="fas fa-trash-alt me-1"></i>Delete Account
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Account Confirmation Modal -->
+<div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-labelledby="deleteAccountModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteAccountModalLabel">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Confirm Account Deletion
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Warning:</strong> This action is permanent and cannot be undone!
+                </div>
+                
+                <p>Are you sure you want to delete your account? This will:</p>
+                
+                <ul class="text-danger">
+                    {% if user.role == 'customer' %}
+                    <li>Delete all your appointments ({{ user.appointments.count }} total)</li>
+                    <li>Remove you from all waiting lists ({{ user.waiting_entries.count }} entries)</li>
+                    <li>Delete your reviews and ratings</li>
+                    <li>Remove all uploaded photos</li>
+                    {% else %}
+                    <li>Delete your barber shop</li>
+                    <li>Cancel all customer appointments</li>
+                    <li>Remove all portfolio images</li>
+                    <li>Delete services and pricing data</li>
+                    {% endif %}
+                    <li>Permanently delete your account and profile</li>
+                </ul>
+                
+                <form id="deleteAccountForm" method="post" action="{% url 'delete_account' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Enter your password to confirm:</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                    </div>
+                    
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="confirmDelete" required>
+                        <label class="form-check-label text-danger" for="confirmDelete">
+                            I understand this action is permanent and cannot be undone
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" form="deleteAccountForm" class="btn btn-danger">
+                    <i class="fas fa-trash-alt me-1"></i>Yes, Delete My Account
+                </button>
             </div>
         </div>
     </div>
