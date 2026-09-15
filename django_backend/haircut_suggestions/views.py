@@ -56,13 +56,28 @@ def analyze_photo_view(request):
     if side and not side.content_type.startswith('image/'):
         return JsonResponse({'error': 'Side file must be an image'}, status=400)
 
-    # PIL images
+    # Decode files early so corrupt uploads return a client error, not a 500.
     from PIL import Image
-    front_img = Image.open(front)
-    side_img = Image.open(side) if side else None
+    try:
+        front_img = Image.open(front)
+        front_img.load()
+        side_img = Image.open(side) if side else None
+        if side_img:
+            side_img.load()
+    except (Image.UnidentifiedImageError, OSError, ValueError):
+        return JsonResponse({'error': 'Please upload a valid image file'}, status=400)
 
     # Analyze and recommend
-    result = analyze_image(front_img, side_img)
+    try:
+        result = analyze_image(front_img, side_img)
+    except Exception:
+        # Optional CV dependencies must not block catalogue recommendations.
+        from .ai.analysis import AnalysisResult
+        result = AnalysisResult(
+            face_shape='oval', hair_type='straight', hair_length='medium',
+            features={'confidence': 0.0, 'used_side_profile': bool(side_img), 'used_fallback': True},
+            landmarks=None,
+        )
     styles = recommend(result.face_shape, result.hair_type, pref_length or result.hair_length, gender)
 
     suggestions = []
@@ -103,6 +118,7 @@ def analyze_photo_view(request):
         'face_shape': result.face_shape,
         'hair_type': result.hair_type,
         'hair_length': result.hair_length,
+        'used_fallback': result.features.get('used_fallback', False),
         'suggestions': suggestions,
     })
 

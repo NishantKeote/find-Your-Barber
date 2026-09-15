@@ -44,5 +44,15 @@ def recommend(face_shape: Optional[str], hair_type: Optional[str], hair_length: 
     if gender:
         qs = qs.filter(Q(gender=gender) | Q(gender="unisex"))
     if hair_length:
-        qs = qs.filter(length_category__in=[hair_length, "any"]) if hasattr(HaircutStyle, 'length_category') else qs
-    return list(qs.order_by('name')[:limit])
+        qs = qs.filter(length_category__in=[hair_length, "any"])
+
+    # A preference should broaden results, not make the carousel empty when the
+    # catalogue has no exact gender or length match.
+    styles = list(qs.order_by('name'))
+    if not styles:
+        styles = list(HaircutStyle.objects.filter(is_active=True).order_by('name'))
+    return sorted(
+        styles,
+        key=lambda style: score_style(style, face_shape, hair_type, hair_length),
+        reverse=True,
+    )[:limit]

@@ -147,13 +147,23 @@ def analyze_hair(img: Image.Image, landmarks: Optional[List[Tuple[float, float]]
 
 
 def analyze_image(front_img: Image.Image, side_img: Optional[Image.Image] = None) -> AnalysisResult:
+    # Normalize mobile uploads before passing them to optional CV libraries.
+    front_img = ImageOps.exif_transpose(front_img).convert("RGB")
     landmarks = detect_landmarks(front_img)
     face_shape = face_shape_from_landmarks(landmarks, front_img.size) if landmarks else None
     hair_type, hair_length = analyze_hair(front_img, landmarks)
 
+    # MediaPipe/OpenCV improve accuracy, but their absence (or an image where a
+    # face is not found) must not leave the customer with no recommendations.
+    used_fallback = not landmarks
+    face_shape = face_shape or "oval"
+    hair_type = hair_type or "straight"
+    hair_length = hair_length or "medium"
+
     features = {
-        "confidence": 0.8 if landmarks else 0.5,
+        "confidence": 0.8 if landmarks else 0.35,
         "used_side_profile": bool(side_img),
+        "used_fallback": used_fallback,
     }
     return AnalysisResult(
         face_shape=face_shape,
